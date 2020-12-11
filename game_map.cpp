@@ -184,11 +184,13 @@ bool MaybeDownload() {
           LOGFLN("Ok");
           index_ = getDatagramOnFace(face)[0];
 
+          // TODO(bga): Add a function to do this as it will also be done in
+          // game message.
           game::state::Data data;
           data.as_byte = getDatagramOnFace(face)[1];
 
-          game::state::Set(data.state);
-          game::state::SetSpecific(data.specific_state);
+          game::state::Set(data.state, true);
+          game::state::SetSpecific(data.specific_state, true);
           game::state::SetPlayer(data.next_player + 1);
         } else {
           LOGFLN("Unexpected Metadata Size");
