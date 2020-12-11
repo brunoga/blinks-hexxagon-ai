@@ -2,6 +2,8 @@
 
 #include "blink_state.h"
 #include "game_map.h"
+#include "game_state.h"
+#include "game_state_play.h"
 #include "src/blinks-broadcast/manager.h"
 
 void setup() {}
@@ -14,7 +16,13 @@ void loop() {
   if (!game::map::MaybeDownload()) {
     broadcast::manager::Process();
 
-    // TODO(bga): Handle game states here.
+    if (game::state::Get() < GAME_STATE_PLAY) {
+      // Reset map if the state is IDLE or SETUP.
+      game::map::Reset();
+    } else if (game::state::Get() == GAME_STATE_PLAY) {
+      // We are in the play state. Delegate to the state-specific handler.
+      game::state::play::Handler();
+    }
   }
 
   blink::state::Render();
