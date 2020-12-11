@@ -1,7 +1,10 @@
 #include "blink_state.h"
 
 #include "game_map.h"
+#include "game_state.h"
+#include "game_state_generic_render.h"
 #include "game_state_no_map_render.h"
+#include "game_state_play_render.h"
 
 namespace blink {
 
@@ -40,11 +43,16 @@ void Render() {
     game::state::no_map::Render();
 
     return;
-  } else {
-    setColor(OFF);
   }
 
-  // TODO(bga): Render based on game states.
+  switch (game::state::GetSpecific()) {
+    case GAME_STATE_PLAY:
+      game::state::play::Render();
+      break;
+    default:
+      game::state::generic::Render();
+      break;
+  }
 }
 
 void Reset() {

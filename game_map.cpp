@@ -6,8 +6,9 @@
 #include "debug.h"
 #include "game_state.h"
 
-#define GAME_MAP_DOWNLOAD_STATE_RECEIVE_SIZE 0
+#define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
 #define GAME_MAP_DOWNLOAD_STATE_DOWNLOAD 1
+
 #define GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE 5
 
 namespace game {
@@ -67,7 +68,7 @@ static void update_map_requested_face() {
       // Yep. Reset everything.
       index_ = 0;
       download_index_ = 0;
-      download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_SIZE;
+      download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
     } else if ((index_ == 0) || (download_index_ < index_)) {
       // We are connected and still transfering the map.
       return;
@@ -177,13 +178,20 @@ bool MaybeDownload() {
 
   if (len > 0) {
     switch (download_state_) {
-      case GAME_MAP_DOWNLOAD_STATE_RECEIVE_SIZE:
-        LOGF("Receiving Size ... ");
-        if (len == 1) {
+      case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
+        LOGF("Receiving Metadata ... ");
+        if (len == 2) {
           LOGFLN("Ok");
           index_ = getDatagramOnFace(face)[0];
+
+          game::state::Data data;
+          data.as_byte = getDatagramOnFace(face)[1];
+
+          game::state::Set(data.state);
+          game::state::SetSpecific(data.specific_state);
+          game::state::SetPlayer(data.next_player + 1);
         } else {
-          LOGFLN("Unexpected Size");
+          LOGFLN("Unexpected Metadata Size");
         }
 
         download_state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
@@ -215,7 +223,7 @@ bool Downloaded() { return ((index_ != 0) && (download_index_ == index_)); }
 void Reset() {
   index_ = 0;
   download_index_ = 0;
-  download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_SIZE;
+  download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
 
   ComputeMapStats();
 }
