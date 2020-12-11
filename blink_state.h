@@ -17,8 +17,11 @@ union FaceValue {
   byte as_byte;
 };
 
-void SetConnectedFace(byte connected_face);
-byte GetConnectedFace();
+void SetPlayer(byte player);
+byte GetPlayer();
+
+void SetMapRequestedFace(byte map_requested_face);
+byte GetMapRequestedFace();
 
 void Render();
 
