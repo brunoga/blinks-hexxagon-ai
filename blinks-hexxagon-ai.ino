@@ -2,27 +2,29 @@
 
 #include "blink_state.h"
 #include "game_map.h"
+#include "game_message.h"
 #include "game_state.h"
 #include "game_state_play.h"
-#include "src/blinks-broadcast/manager.h"
+#include "util.h"
 
-void setup() {}
+void setup() { blink::state::Reset(); }
 
 void loop() {
-  if (buttonSingleClicked()) {
-    blink::state::SetPlayer(game::player::GetNext(blink::state::GetPlayer()));
-  }
+  game::message::Process();
 
-  if (!game::map::MaybeDownload()) {
-    broadcast::manager::Process();
+  bool button_clicked = util::NoSleepButtonSingleClicked();
 
-    if (game::state::Get() < GAME_STATE_PLAY) {
-      // Reset map if the state is IDLE or SETUP.
-      game::map::Reset();
-    } else if (game::state::Get() == GAME_STATE_PLAY) {
-      // We are in the play state. Delegate to the state-specific handler.
-      game::state::play::Handler();
+  if (game::map::Downloaded()) {
+    switch (game::state::Get()) {
+      case GAME_STATE_PLAY:
+        game::state::play::Handler();
+        break;
+      default:
+        game::map::Reset();
+        break;
     }
+  } else if (button_clicked) {
+    blink::state::SetPlayer(game::player::GetNext(blink::state::GetPlayer()));
   }
 
   blink::state::Render();

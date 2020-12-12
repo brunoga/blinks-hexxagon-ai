@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "blink_state.h"
-#include "debug.h"
 #include "game_state.h"
 
 #define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
@@ -69,10 +68,11 @@ static void update_map_requested_face() {
       index_ = 0;
       download_index_ = 0;
       download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
-    } else if ((index_ == 0) || (download_index_ < index_)) {
-      // We are connected and still transfering the map.
-      return;
+
+      blink::state::SetMapRequestedFace(FACE_COUNT);
     }
+
+    return;
   }
 
   // We need a map. Search for a face to request it from.
@@ -84,8 +84,6 @@ static void update_map_requested_face() {
       return;
     }
   }
-
-  blink::state::SetMapRequestedFace(FACE_COUNT);
 }
 
 void ComputeMapStats() {
@@ -164,24 +162,14 @@ bool MaybeDownload() {
 
   byte face = blink::state::GetMapRequestedFace();
 
-  if (face == FACE_COUNT) {
-    LOGFLN("not connected");
-
-    return false;
-  }
-
-  LOGFLN("connected");
+  if (face == FACE_COUNT || Downloaded()) return false;
 
   byte len = getDatagramLengthOnFace(face);
-
-  LOGLN(len);
 
   if (len > 0) {
     switch (download_state_) {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
-        LOGF("Receiving Metadata ... ");
         if (len == 2) {
-          LOGFLN("Ok");
           index_ = getDatagramOnFace(face)[0];
 
           // TODO(bga): Add a function to do this as it will also be done in
@@ -192,20 +180,14 @@ bool MaybeDownload() {
           game::state::Set(data.state, true);
           game::state::SetSpecific(data.specific_state, true);
           game::state::SetPlayer(data.next_player + 1);
-        } else {
-          LOGFLN("Unexpected Metadata Size");
         }
 
         download_state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         break;
       case GAME_MAP_DOWNLOAD_STATE_DOWNLOAD:
-        LOGF("Receiving Data ... ");
         if (len <= GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE) {
           memcpy(&map_[download_index_], getDatagramOnFace(face), len);
           download_index_ += len;
-          LOGFLN("Ok");
-        } else {
-          LOGFLN("Unexpected Size");
         }
         break;
     }
@@ -213,14 +195,10 @@ bool MaybeDownload() {
     markDatagramReadOnFace(face);
   }
 
-  if (index_ != 0 && download_index_ == index_) {
-    LOGFLN("Map Downloaded");
-  }
-
   return true;
 }
 
-bool Downloaded() { return ((index_ != 0) && (download_index_ == index_)); }
+bool Downloaded() { return ((index_ > 0) && (download_index_ == index_)); }
 
 void Reset() {
   index_ = 0;

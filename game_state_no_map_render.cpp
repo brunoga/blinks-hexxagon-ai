@@ -11,11 +11,7 @@ namespace state {
 namespace no_map {
 
 void Render() {
-  byte faces = 1;
-
-  if (blink::state::GetMapRequestedFace() == FACE_COUNT) {
-    faces = 2;
-  }
+  byte faces = 1 + (blink::state::GetMapRequestedFace() != FACE_COUNT);
 
   // Render 1 spinning face when not connected to a Blink and 2 spinning faces
   // when connected.
