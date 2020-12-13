@@ -6,7 +6,7 @@
 #include "game_player.h"
 #include "src/blinks-position/position.h"
 
-#define GAME_MAP_MAX_BLINKS 85
+#define GAME_MAP_MAX_BLINKS 84
 
 namespace game {
 
@@ -48,6 +48,14 @@ bool Downloaded();
 
 // Sets all map data to invalid values.
 void Reset();
+
+// AI-specific functions.
+
+const Data* GetNextViableOrigin();
+void ResetOriginIterator();
+
+const Data* GetNextViableTarget(position::Coordinates origin);
+void ResetTargetIterator();
 
 }  // namespace map
 

@@ -26,6 +26,8 @@ void Spinner(const Color& foreground, const Color& background, byte num_faces,
   }
 }
 
+void ResetTimer() { timer_.set(0); }
+
 }  // namespace animation
 
 }  // namespace render

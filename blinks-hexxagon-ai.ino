@@ -7,7 +7,10 @@
 #include "game_state_play.h"
 #include "util.h"
 
-void setup() { blink::state::Reset(); }
+void setup() {
+  blink::state::Reset();
+  blink::state::SetPlayer(1);  // Start with first real player.
+}
 
 void loop() {
   game::message::Process();
@@ -23,8 +26,14 @@ void loop() {
         game::map::Reset();
         break;
     }
-  } else if (button_clicked) {
-    blink::state::SetPlayer(game::player::GetNext(blink::state::GetPlayer()));
+  } else {
+    if (button_clicked) {
+      byte next_player = game::player::GetNext(blink::state::GetPlayer());
+
+      blink::state::SetPlayer(next_player == 0 ? 1 : next_player);
+    }
+
+    game::state::play::Reset();
   }
 
   blink::state::Render();

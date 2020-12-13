@@ -8,7 +8,7 @@
 #define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
 #define GAME_MAP_DOWNLOAD_STATE_DOWNLOAD 1
 
-#define GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE 5
+#define GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE 3
 
 namespace game {
 
@@ -29,6 +29,9 @@ struct MoveData {
   position::Coordinates target;
 };
 static MoveData move_data_;
+
+static byte origin_iterator_;
+static byte target_iterator_;
 
 static Data* find_entry_in_map(int8_t x, int8_t y) {
   for (byte i = 0; i < index_; ++i) {
@@ -65,10 +68,7 @@ static void update_map_requested_face() {
     // We are, did we get disconnected?
     if (isValueReceivedOnFaceExpired(map_requested_face)) {
       // Yep. Reset everything.
-      index_ = 0;
-      download_index_ = 0;
-      download_state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
-
+      Reset();
       blink::state::SetMapRequestedFace(FACE_COUNT);
     }
 
@@ -84,6 +84,19 @@ static void update_map_requested_face() {
       return;
     }
   }
+}
+
+bool can_move(const Data& data) {
+  for (byte i = 0; i < index_; ++i) {
+    if ((map_[i].player == 0) &&
+        (position::coordinates::Distance(
+             {(int8_t)data.x, (int8_t)data.y},
+             {(int8_t)map_[i].x, (int8_t)map_[i].y}) <= 2)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void ComputeMapStats() {
@@ -169,25 +182,29 @@ bool MaybeDownload() {
   if (len > 0) {
     switch (download_state_) {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
-        if (len == 2) {
-          index_ = getDatagramOnFace(face)[0];
+        if (len == 3 && getDatagramOnFace(face)[0] == 6) {
+          index_ = getDatagramOnFace(face)[1];
 
           // TODO(bga): Add a function to do this as it will also be done in
           // game message.
           game::state::Data data;
-          data.as_byte = getDatagramOnFace(face)[1];
+          data.as_byte = getDatagramOnFace(face)[2];
 
           game::state::Set(data.state, true);
           game::state::SetSpecific(data.specific_state, true);
           game::state::SetPlayer(data.next_player + 1);
+
+          download_state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         }
 
-        download_state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         break;
       case GAME_MAP_DOWNLOAD_STATE_DOWNLOAD:
-        if (len <= GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE) {
+        bool is_chunk_len = (len == (GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE * 2));
+        bool is_last_chunk_len = (((len / 2) + download_index_) == index_);
+
+        if (is_chunk_len || is_last_chunk_len) {
           memcpy(&map_[download_index_], getDatagramOnFace(face), len);
-          download_index_ += len;
+          download_index_ += (len / 2);
         }
         break;
     }
@@ -207,6 +224,37 @@ void Reset() {
 
   ComputeMapStats();
 }
+
+const Data* GetNextViableOrigin() {
+  for (; origin_iterator_ < index_; ++origin_iterator_) {
+    if (map_[origin_iterator_].player != blink::state::GetPlayer()) continue;
+
+    if (!can_move(map_[origin_iterator_])) continue;
+
+    return &map_[origin_iterator_];
+  }
+
+  return nullptr;
+}
+
+void ResetOriginIterator() { origin_iterator_ = 0; }
+
+const Data* GetNextViableTarget(position::Coordinates origin) {
+  for (; target_iterator_ < index_; ++target_iterator_) {
+    if (map_[target_iterator_].player != 0) continue;
+
+    if (position::coordinates::Distance(
+            origin, {map_[target_iterator_].x, map_[target_iterator_].y}) > 2) {
+      continue;
+    }
+
+    return &map_[target_iterator_];
+  }
+
+  return nullptr;
+}
+
+void ResetTargetIterator() { target_iterator_ = 0; }
 
 }  // namespace map
 
