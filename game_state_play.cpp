@@ -15,14 +15,11 @@ static bool done_origin_;
 static bool done_target_;
 
 void Handler() {
-  if (game::state::GetPlayer() != blink::state::GetPlayer()) {
-    // We can only act when our player is the current game player.
-    return;
-  }
+  bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
   switch (game::state::GetSpecific()) {
     case GAME_STATE_PLAY_SELECT_ORIGIN: {
-      if (done_origin_) return;
+      if (done_origin_ || !current_player) return;
 
       // This is just for testing. We always look for the first viable origin.
       game::map::ResetOriginIterator();
@@ -38,7 +35,7 @@ void Handler() {
       break;
     }
     case GAME_STATE_PLAY_SELECT_TARGET: {
-      if (done_target_) return;
+      if (done_target_ || !current_player) return;
 
       // This is just for testing. We always look for the first viable target.
       game::map::ResetTargetIterator();
@@ -57,7 +54,7 @@ void Handler() {
     case GAME_STATE_PLAY_RESOLVE_MOVE:
       game::map::CommitMove();
       Reset();
-
+      break;
     default:
       break;
   }
