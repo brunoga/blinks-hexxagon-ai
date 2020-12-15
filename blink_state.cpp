@@ -58,7 +58,7 @@ void Render() {
   }
 }
 
-byte NextAILevel() {
+void NextAILevel() {
   state_.ai_level =
       (state_.ai_level == BLINK_STATE_MAX_AI_LEVEL) ? 0 : state_.ai_level + 1;
 }

@@ -18,6 +18,7 @@ void loop() {
   game::message::Process();
 
   bool button_clicked = util::NoSleepButtonSingleClicked();
+  bool button_double_clicked = buttonDoubleClicked();
 
   if (game::map::Downloaded()) {
     switch (game::state::Get()) {
@@ -32,7 +33,11 @@ void loop() {
         break;
     }
   } else {
-    if (button_clicked) {
+    if (button_double_clicked) {
+      // TODO(bga): Implementing AI level indicator. Maybe show the level for a
+      // second or so after a double clicking?
+      blink::state::NextAILevel();
+    } else if (button_clicked) {
       // Switch to next available player.
       byte next_player = game::player::GetNext(blink::state::GetPlayer());
 
