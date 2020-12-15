@@ -6,11 +6,14 @@
 #include "game_state_no_map_render.h"
 #include "game_state_play_render.h"
 
+#define BLINK_STATE_MAX_AI_LEVEL 1  // First level is 0.
+
 namespace blink {
 
 struct State {
   byte player;
   byte map_requested_face;
+  byte ai_level;
 };
 static State state_;
 
@@ -54,6 +57,13 @@ void Render() {
       break;
   }
 }
+
+byte NextAILevel() {
+  state_.ai_level =
+      (state_.ai_level == BLINK_STATE_MAX_AI_LEVEL) ? 0 : state_.ai_level + 1;
+}
+
+byte GetAILevel() { return state_.ai_level; }
 
 void Reset() {
   state_.player = 0;

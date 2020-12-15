@@ -23,6 +23,9 @@ byte GetPlayer();
 void SetMapRequestedFace(byte map_requested_face);
 byte GetMapRequestedFace();
 
+void NextAILEvel();
+byte GetAILevel();
+
 void Render();
 
 void Reset();

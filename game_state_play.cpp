@@ -3,6 +3,7 @@
 #include "blink_state.h"
 #include "game_map.h"
 #include "game_message.h"
+#include "game_player_ai_conditional_random.h"
 #include "game_player_ai_random.h"
 #include "game_state.h"
 
@@ -28,9 +29,18 @@ void Handler() {
         return;
       }
 
-      if (!got_move_ ||
-          !game::player::ai::random::GetMove(&origin_, &target_)) {
-        return;
+      if (!got_move_) {
+        switch (blink::state::GetAILevel()) {
+          case 0:
+            got_move_ = game::player::ai::random::GetMove(&origin_, &target_);
+            break;
+          case 1:
+            got_move_ = game::player::ai::conditional_random::GetMove(&origin_,
+                                                                      &target_);
+            break;
+        }
+
+        if (!got_move_) return;
       }
 
       got_move_ = true;
