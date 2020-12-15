@@ -33,16 +33,6 @@ static MoveData move_data_;
 static byte origin_iterator_;
 static byte target_iterator_;
 
-static Data* find_entry_in_map(int8_t x, int8_t y) {
-  for (byte i = 0; i < index_; ++i) {
-    if (x == map_[i].x && y == map_[i].y) {
-      return &map_[i];
-    }
-  }
-
-  return nullptr;
-}
-
 static void __attribute__((noinline))
 update_blinks(position::Coordinates coordinates, byte player,
               bool update_neighbors) {
@@ -225,36 +215,62 @@ void Reset() {
   ComputeMapStats();
 }
 
-const Data* GetNextViableOrigin() {
+bool GetNextPossibleMove(byte player, position::Coordinates* origin,
+                         position::Coordinates* target) {
   for (; origin_iterator_ < index_; ++origin_iterator_) {
-    if (map_[origin_iterator_].player != blink::state::GetPlayer()) continue;
+    if (map_[origin_iterator_].player != player) continue;
 
     if (!can_move(map_[origin_iterator_])) continue;
 
-    return &map_[origin_iterator_];
-  }
+    for (; target_iterator_ < index_; ++target_iterator_) {
+      if (map_[target_iterator_].player != 0) continue;
 
-  return nullptr;
-}
+      if (position::coordinates::Distance({(int8_t)map_[origin_iterator_].x,
+                                           (int8_t)map_[origin_iterator_].y},
+                                          {(int8_t)map_[target_iterator_].x,
+                                           (int8_t)map_[target_iterator_].y}) >
+          2) {
+        continue;
+      }
 
-void ResetOriginIterator() { origin_iterator_ = 0; }
+      origin->x = map_[origin_iterator_].x;
+      origin->y = map_[origin_iterator_].y;
+      target->x = map_[target_iterator_].x;
+      target->y = map_[target_iterator_].y;
 
-const Data* GetNextViableTarget(position::Coordinates origin) {
-  for (; target_iterator_ < index_; ++target_iterator_) {
-    if (map_[target_iterator_].player != 0) continue;
-
-    if (position::coordinates::Distance(
-            origin, {map_[target_iterator_].x, map_[target_iterator_].y}) > 2) {
-      continue;
+      return true;
     }
 
-    return &map_[target_iterator_];
+    target_iterator_ = 0;
   }
 
-  return nullptr;
+  origin_iterator_ = 0;
+
+  return false;
 }
 
-void ResetTargetIterator() { target_iterator_ = 0; }
+byte CountEnemyNeighbors(byte player, position::Coordinates coordinates) {
+  byte neighbor_count = 0;
+  byte neighbor_enemy_count = 0;
+  for (byte i = 0; i < index_; ++i) {
+    if (position::coordinates::Distance(
+            coordinates, {(int8_t)map_[i].x, (int8_t)map_[i].y}) == 1) {
+      neighbor_count++;
+      if (map_[i].player != 0 && map_[i].player != player) {
+        neighbor_enemy_count++;
+      }
+
+      if (neighbor_count == FACE_COUNT) break;
+    }
+  }
+
+  return neighbor_enemy_count;
+}
+
+void ResetPossibleMoveIterators() {
+  target_iterator_ = 0;
+  origin_iterator_ = 0;
+}
 
 }  // namespace map
 

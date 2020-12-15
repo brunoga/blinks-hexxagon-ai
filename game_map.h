@@ -51,11 +51,11 @@ void Reset();
 
 // AI-specific functions.
 
-const Data* GetNextViableOrigin();
-void ResetOriginIterator();
+bool GetNextPossibleMove(byte player, position::Coordinates* origin,
+                         position::Coordinates* target);
+void ResetPossibleMoveIterators();
 
-const Data* GetNextViableTarget(position::Coordinates origin);
-void ResetTargetIterator();
+byte CountEnemyNeighbors(byte player, position::Coordinates coordinates);
 
 }  // namespace map
 

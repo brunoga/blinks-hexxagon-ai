@@ -17,8 +17,6 @@ namespace play {
 
 void Handler();
 
-void Reset();
-
 }  // namespace play
 
 }  // namespace state

@@ -3,6 +3,7 @@
 #include "blink_state.h"
 #include "game_map.h"
 #include "game_message.h"
+#include "game_player_ai_random.h"
 #include "game_state.h"
 
 namespace game {
@@ -11,58 +12,52 @@ namespace state {
 
 namespace play {
 
-static bool done_origin_;
-static bool done_target_;
+static position::Coordinates origin_;
+static position::Coordinates target_;
+
+static bool got_move_;
+static bool origin_done_;
+static bool target_done_;
 
 void Handler() {
   bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
   switch (game::state::GetSpecific()) {
-    case GAME_STATE_PLAY_SELECT_ORIGIN: {
-      if (done_origin_ || !current_player) return;
+    case GAME_STATE_PLAY_SELECT_ORIGIN:
+      if (!current_player || origin_done_) {
+        return;
+      }
 
-      // This is just for testing. We always look for the first viable origin.
-      game::map::ResetOriginIterator();
+      if (!got_move_ ||
+          !game::player::ai::random::GetMove(&origin_, &target_)) {
+        return;
+      }
 
-      const game::map::Data* data = game::map::GetNextViableOrigin();
-      if (data != nullptr) {
-        if (game::message::SendSelectOrigin(data->x, data->y)) {
-          game::map::SetMoveOrigin(data->x, data->y);
-          done_origin_ = true;
-        }
+      got_move_ = true;
+
+      if (game::message::SendSelectOrigin(origin_.x, origin_.y)) {
+        game::map::SetMoveOrigin(origin_.x, origin_.y);
+        origin_done_ = true;
       }
 
       break;
-    }
-    case GAME_STATE_PLAY_SELECT_TARGET: {
-      if (done_target_ || !current_player) return;
+    case GAME_STATE_PLAY_SELECT_TARGET:
+      if (!current_player || !got_move_ || target_done_) return;
 
-      // This is just for testing. We always look for the first viable target.
-      game::map::ResetTargetIterator();
-
-      const game::map::Data* data =
-          game::map::GetNextViableTarget(game::map::GetMoveOrigin());
-      if (data != nullptr) {
-        if (game::message::SendSelectTarget(data->x, data->y)) {
-          game::map::SetMoveTarget(data->x, data->y);
-          done_target_ = true;
-        }
+      if (game::message::SendSelectTarget(target_.x, target_.y)) {
+        game::map::SetMoveTarget(target_.x, target_.y);
+        target_done_ = true;
       }
 
       break;
-    }
     case GAME_STATE_PLAY_RESOLVE_MOVE:
       game::map::CommitMove();
-      Reset();
-      break;
-    default:
+
+      got_move_ = false;
+      origin_done_ = false;
+      target_done_ = false;
       break;
   }
-}
-
-void Reset() {
-  done_origin_ = false;
-  done_target_ = false;
 }
 
 }  // namespace play
