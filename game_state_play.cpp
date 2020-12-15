@@ -23,6 +23,10 @@ static bool target_done_;
 void Handler() {
   bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
+  if (game::state::Changed()) {
+    game::map::ResetPossibleMoveIterators();
+  }
+
   switch (game::state::GetSpecific()) {
     case GAME_STATE_PLAY_SELECT_ORIGIN:
       if (!current_player || origin_done_) {
