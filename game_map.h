@@ -55,7 +55,9 @@ bool GetNextPossibleMove(byte player, position::Coordinates* origin,
                          position::Coordinates* target);
 void ResetPossibleMoveIterators();
 
-byte CountEnemyNeighbors(byte player, position::Coordinates coordinates);
+void CountNeighbors(byte player, position::Coordinates coordinates,
+                    byte* total_neighbors, byte* player_neighbors,
+                    byte* enemy_neighbors);
 
 }  // namespace map
 

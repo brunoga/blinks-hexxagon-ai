@@ -254,22 +254,23 @@ bool GetNextPossibleMove(byte player, position::Coordinates* origin,
   return false;
 }
 
-byte CountEnemyNeighbors(byte player, position::Coordinates coordinates) {
-  byte neighbor_count = 0;
-  byte neighbor_enemy_count = 0;
+void CountNeighbors(byte player, position::Coordinates coordinates,
+                    byte* total_neighbors, byte* player_neighbors,
+                    byte* enemy_neighbors) {
+  *total_neighbors = 0;
+  *player_neighbors = 0;
+  *enemy_neighbors = 0;
   for (byte i = 0; i < index_; ++i) {
     if (position::coordinates::Distance(
             coordinates, {(int8_t)map_[i].x, (int8_t)map_[i].y}) == 1) {
-      neighbor_count++;
+      (*total_neighbors)++;
       if (map_[i].player != 0 && map_[i].player != player) {
-        neighbor_enemy_count++;
+        (*enemy_neighbors)++;
+      } else if (map_[i].player == player) {
+        (*player_neighbors)++;
       }
-
-      if (neighbor_count == FACE_COUNT) break;
     }
   }
-
-  return neighbor_enemy_count;
 }
 
 void ResetPossibleMoveIterators() {

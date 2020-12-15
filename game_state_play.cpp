@@ -5,6 +5,7 @@
 #include "game_message.h"
 #include "game_player_ai_conditional_random.h"
 #include "game_player_ai_random.h"
+#include "game_player_ai_score.h"
 #include "game_state.h"
 
 namespace game {
@@ -42,6 +43,8 @@ void Handler() {
             got_move_ = game::player::ai::conditional_random::GetMove(&origin_,
                                                                       &target_);
             break;
+          case 2:
+            got_move_ = game::player::ai::score::GetMove(&origin_, &target_);
         }
 
         if (!got_move_) return;

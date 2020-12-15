@@ -23,15 +23,22 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
 
     // Ok, so this is a jump move. Check if we will capture at least one enemy
     // piece.
-    if (game::map::CountEnemyNeighbors(blink::state::GetPlayer(), *target) !=
-        0) {
+    byte total_neighbors;
+    byte player_neighbors;
+    byte enemy_neighbors;
+    game::map::CountNeighbors(blink::state::GetPlayer(), *target,
+                              &total_neighbors, &player_neighbors,
+                              &enemy_neighbors);
+    if (enemy_neighbors > 0) {
       // Target position has at least 1 enemy neighbor.
       return true;
     }
   }
 
-  // This should never be reached.
-  return false;
+  // If we got to this point, we did not find any move that satisfies our
+  // requirements. Return a random move.
+  return game::player::ai::GetRandomMove(blink::state::GetPlayer(), origin,
+                                         target);
 }
 
 }  // namespace conditional_random
