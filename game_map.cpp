@@ -238,6 +238,11 @@ bool GetNextPossibleMove(byte player, position::Coordinates* origin,
       target->x = map_[target_iterator_].x;
       target->y = map_[target_iterator_].y;
 
+      // Increase iterator otherwise on the next iteration we would be at the
+      // same point, which would lead us getting here again and so on, resulting
+      // in an possible infinite loop.
+      target_iterator_++;
+
       return true;
     }
 
