@@ -34,15 +34,18 @@ void loop() {
     }
   } else {
     if (button_double_clicked) {
-      // TODO(bga): Implementing AI level indicator. Maybe show the level for a
-      // second or so after a double clicking?
-      blink::state::NextAILevel();
+      blink::state::StartLevelSelection();
     } else if (button_clicked) {
-      // Switch to next available player.
-      byte next_player = game::player::GetNext(blink::state::GetPlayer());
+      if (blink::state::GetLevelSelection()) {
+        blink::state::NextAILevel();
+        blink::state::StartLevelSelection();
+      } else {
+        // Switch to next available player.
+        byte next_player = game::player::GetNext(blink::state::GetPlayer());
 
-      // Make sure we filter out the empty player.
-      blink::state::SetPlayer(next_player == 0 ? 1 : next_player);
+        // Make sure we filter out the empty player.
+        blink::state::SetPlayer(next_player == 0 ? 1 : next_player);
+      }
     }
   }
 
