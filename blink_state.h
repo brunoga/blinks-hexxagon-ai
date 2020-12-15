@@ -26,6 +26,9 @@ byte GetMapRequestedFace();
 void NextAILevel();
 byte GetAILevel();
 
+void StartLevelSelection();
+bool GetLevelSelection();
+
 void Render();
 
 void Reset();

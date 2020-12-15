@@ -7,6 +7,7 @@
 #include "game_state_play_render.h"
 
 #define BLINK_STATE_MAX_AI_LEVEL 1  // First level is 0.
+#define BLINK_STATE_LEVEL_SELECTION_TIMEOUT 2000
 
 namespace blink {
 
@@ -14,6 +15,7 @@ struct State {
   byte player;
   byte map_requested_face;
   byte ai_level;
+  Timer level_selection_timer_;
 };
 static State state_;
 
@@ -42,6 +44,15 @@ void Render() {
     setValueSentOnFace(face_value.as_byte, face);
   }
 
+  if (GetLevelSelection()) {
+    setColor(MAKECOLOR_5BIT_RGB(8, 8, 8));
+    for (byte face = 0; face <= GetAILevel(); ++face) {
+      setColorOnFace(game::player::GetColor(GetPlayer()), face);
+    }
+
+    return;
+  }
+
   if (!game::map::Downloaded()) {
     game::state::no_map::Render();
 
@@ -64,6 +75,12 @@ void NextAILevel() {
 }
 
 byte GetAILevel() { return state_.ai_level; }
+
+void StartLevelSelection() {
+  state_.level_selection_timer_.set(BLINK_STATE_LEVEL_SELECTION_TIMEOUT);
+}
+
+bool GetLevelSelection() { return !state_.level_selection_timer_.isExpired(); }
 
 void Reset() {
   state_.player = 0;
