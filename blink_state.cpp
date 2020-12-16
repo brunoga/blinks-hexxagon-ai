@@ -59,7 +59,7 @@ void Render() {
     return;
   }
 
-  switch (game::state::GetSpecific()) {
+  switch (game::state::Get()) {
     case GAME_STATE_PLAY:
       game::state::play::Render();
       break;
