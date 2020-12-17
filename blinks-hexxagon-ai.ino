@@ -27,7 +27,7 @@ void loop() {
         break;
       default:
         // We reset the map whenever we get to any state that is not the play
-        // one. A new map will be automatically downloaded whjen we are back to
+        // one. A new map will be automatically downloaded when we are back to
         // the play state in the game.
         game::map::Reset();
         break;
