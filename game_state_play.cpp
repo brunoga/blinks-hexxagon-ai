@@ -21,11 +21,13 @@ static bool got_move_;
 static bool origin_done_;
 static bool target_done_;
 
+static Timer wait_timer_;
+
 void Handler() {
   bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
   if (game::state::Changed()) {
-    game::map::ResetPossibleMoveIterators();
+    wait_timer_.set(2000);
   }
 
   switch (game::state::GetSpecific()) {
@@ -35,6 +37,8 @@ void Handler() {
       }
 
       if (!got_move_) {
+        game::map::ResetPossibleMoveIterators();
+
         switch (blink::state::GetAILevel()) {
           case 0:
             got_move_ = game::player::ai::random::GetMove(&origin_, &target_);
@@ -50,7 +54,7 @@ void Handler() {
         if (!got_move_) return;
       }
 
-      got_move_ = true;
+      if (!wait_timer_.isExpired()) return;
 
       if (game::message::SendSelectOrigin(origin_.x, origin_.y)) {
         game::map::SetMoveOrigin(origin_.x, origin_.y);
@@ -60,6 +64,8 @@ void Handler() {
       break;
     case GAME_STATE_PLAY_SELECT_TARGET:
       if (!current_player || !got_move_ || target_done_) return;
+
+      if (!wait_timer_.isExpired()) return;
 
       if (game::message::SendSelectTarget(target_.x, target_.y)) {
         game::map::SetMoveTarget(target_.x, target_.y);

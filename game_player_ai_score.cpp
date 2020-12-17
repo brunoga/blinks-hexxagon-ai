@@ -18,11 +18,9 @@ namespace ai {
 namespace score {
 
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
-  game::map::ResetPossibleMoveIterators();
-
   position::Coordinates selected_origin;
   position::Coordinates selected_target;
-  int16_t selected_score = 0;
+  int16_t selected_score = -32768;
 
   while (game::map::GetNextPossibleMove(blink::state::GetPlayer(), origin,
                                         target)) {
