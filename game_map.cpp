@@ -8,7 +8,13 @@
 #define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
 #define GAME_MAP_DOWNLOAD_STATE_DOWNLOAD 1
 
-#define GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE 3
+#define GAME_MAP_DOWNLOAD_METADATA_SIZE 3
+
+#define MESSAGE_MAP_DOWNLOAD 6  // Only used for starting the map download.
+
+// 2 byte entries (4 bytes total). Chosen to be smaller than the maximum size of
+// datagram we use otherwise.
+#define GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE 2
 
 namespace game {
 
@@ -172,7 +178,8 @@ bool MaybeDownload() {
   if (len > 0) {
     switch (download_state_) {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
-        if (len == 3 && getDatagramOnFace(face)[0] == 6) {
+        if (len == GAME_MAP_DOWNLOAD_METADATA_SIZE &&
+            getDatagramOnFace(face)[0] == MESSAGE_MAP_DOWNLOAD) {
           index_ = getDatagramOnFace(face)[1];
 
           // TODO(bga): Add a function to do this as it will also be done in
