@@ -1,6 +1,6 @@
 #include "blink_state.h"
 
-#include "game_map.h"
+#include "game_map_download.h"
 #include "game_state.h"
 #include "game_state_generic_render.h"
 #include "game_state_no_map_render.h"
@@ -53,7 +53,7 @@ void Render() {
     return;
   }
 
-  if (!game::map::Downloaded()) {
+  if (!game::map::download::Downloaded()) {
     game::state::no_map::Render();
 
     return;

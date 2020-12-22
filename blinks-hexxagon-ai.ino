@@ -2,6 +2,7 @@
 
 #include "blink_state.h"
 #include "game_map.h"
+#include "game_map_download.h"
 #include "game_message.h"
 #include "game_state.h"
 #include "game_state_play.h"
@@ -20,7 +21,7 @@ void loop() {
   bool button_clicked = util::NoSleepButtonSingleClicked();
   bool button_double_clicked = buttonDoubleClicked();
 
-  if (game::map::Downloaded()) {
+  if (!game::map::download::Process()) {
     switch (game::state::Get()) {
       case GAME_STATE_PLAY:
         game::state::play::Handler();

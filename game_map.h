@@ -29,6 +29,10 @@ struct Statistics {
 
 void ComputeMapStats();
 
+Data* Get();
+byte GetSize();
+void SetSize(byte size);
+
 void SetMoveOrigin(int8_t x, int8_t y);
 position::Coordinates GetMoveOrigin();
 
@@ -42,9 +46,6 @@ void CommitMove();
 const Statistics& GetStatistics();
 
 bool ValidState();
-
-bool MaybeDownload();
-bool Downloaded();
 
 // Sets all map data to invalid values.
 void Reset();

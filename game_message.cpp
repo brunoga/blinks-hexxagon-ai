@@ -37,8 +37,6 @@ static void select_target(const byte* payload) {
 }
 
 void Process() {
-  if (game::map::MaybeDownload()) return;
-
   FOREACH_FACE(face) {
     if (!isDatagramReadyOnFace(face)) continue;
 
