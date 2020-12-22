@@ -26,6 +26,12 @@ void Handler() {
 
   switch (game::state::GetSpecific()) {
     case GAME_STATE_PLAY_SELECT_ORIGIN:
+      if (game::state::Changed()) {
+        got_move_ = false;
+        origin_done_ = false;
+        target_done_ = false;
+      }
+
       if (!current_player || origin_done_) {
         return;
       }
@@ -65,10 +71,6 @@ void Handler() {
       break;
     case GAME_STATE_PLAY_RESOLVE_MOVE:
       game::map::CommitMove();
-
-      got_move_ = false;
-      origin_done_ = false;
-      target_done_ = false;
       break;
   }
 }

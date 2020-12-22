@@ -16,12 +16,12 @@ void setup() {
 }
 
 void loop() {
-  game::message::Process();
-
   bool button_clicked = util::NoSleepButtonSingleClicked();
   bool button_double_clicked = buttonDoubleClicked();
 
-  if (!game::map::download::Process()) {
+  if (game::map::download::Downloaded()) {
+    game::message::Process();
+
     switch (game::state::Get()) {
       case GAME_STATE_PLAY:
         game::state::play::Handler();
@@ -33,7 +33,10 @@ void loop() {
         game::map::Reset();
         break;
     }
-  } else {
+
+    game::state::Set(game::state::Get());
+    game::state::SetSpecific(game::state::GetSpecific());
+  } else if (!game::map::download::Process()) {
     if (button_double_clicked) {
       blink::state::StartLevelSelection();
     } else if (button_clicked) {
