@@ -43,32 +43,6 @@ update_blinks(position::Coordinates coordinates, byte player,
   }
 }
 
-static void update_map_requested_face() {
-  byte map_requested_face = blink::state::GetMapRequestedFace();
-
-  // Check if we are currently connected.
-  if (map_requested_face != FACE_COUNT) {
-    // We are, did we get disconnected?
-    if (isValueReceivedOnFaceExpired(map_requested_face)) {
-      // Yep. Reset everything.
-      Reset();
-      blink::state::SetMapRequestedFace(FACE_COUNT);
-    }
-
-    return;
-  }
-
-  // We need a map. Search for a face to request it from.
-  FOREACH_FACE(face) {
-    if (!isValueReceivedOnFaceExpired(face)) {
-      // Found a face to hopefuly request a map from.
-      blink::state::SetMapRequestedFace(face);
-
-      return;
-    }
-  }
-}
-
 bool can_move(const Data& data) {
   for (byte i = 0; i < index_; ++i) {
     if ((map_[i].player == 0) &&
