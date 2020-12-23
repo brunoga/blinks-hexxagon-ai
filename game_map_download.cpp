@@ -67,7 +67,7 @@ bool Process() {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
         if (len == GAME_MAP_DOWNLOAD_METADATA_SIZE &&
             getDatagramOnFace(face)[0] == MESSAGE_MAP_DOWNLOAD) {
-          index_ = getDatagramOnFace(face)[1];
+          game::map::SetSize(getDatagramOnFace(face)[1]);
 
           // TODO(bga): Add a function to do this as it will also be done in
           // game message.
@@ -84,7 +84,7 @@ bool Process() {
         break;
       case GAME_MAP_DOWNLOAD_STATE_DOWNLOAD:
         bool is_chunk_len = (len == (GAME_MAP_DOWNLOAD_MAX_CHUNK_SIZE * 2));
-        bool is_last_chunk_len = (((len / 2) + index_) == index_);
+        bool is_last_chunk_len = (((len / 2) + index_) == game::map::GetSize());
 
         if (is_chunk_len || is_last_chunk_len) {
           memcpy(&(game::map::Get()[index_]), getDatagramOnFace(face), len);

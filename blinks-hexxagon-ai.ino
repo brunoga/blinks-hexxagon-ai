@@ -19,7 +19,7 @@ void loop() {
   bool button_clicked = util::NoSleepButtonSingleClicked();
   bool button_double_clicked = buttonDoubleClicked();
 
-  if (game::map::download::Downloaded()) {
+  if (!game::map::download::Process()) {
     game::message::Process();
 
     switch (game::state::Get()) {
@@ -31,12 +31,15 @@ void loop() {
         // one. A new map will be automatically downloaded when we are back to
         // the play state in the game.
         game::map::Reset();
+        game::map::download::Reset();
         break;
     }
 
     game::state::Set(game::state::Get());
     game::state::SetSpecific(game::state::GetSpecific());
-  } else if (!game::map::download::Process()) {
+  }
+
+  if (!game::map::download::Downloaded()) {
     if (button_double_clicked) {
       blink::state::StartLevelSelection();
     } else if (button_clicked) {
