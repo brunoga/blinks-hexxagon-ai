@@ -36,6 +36,8 @@ void loop() {
       game::map::Reset();
       game::map::download::Reset();
     }
+
+    game::state::Set(state);
   }
 
   if (!game::map::download::Downloaded()) {
