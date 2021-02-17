@@ -8,12 +8,10 @@
 
 #define BLINK_STATE_MAX_AI_LEVEL 4  // First level is 0.
 #define BLINK_STATE_LEVEL_SELECTION_TIMEOUT 2000
-
 namespace blink {
 
 struct State {
   byte player;
-  byte map_requested_face;
   byte ai_level;
   Timer level_selection_timer_;
 };
@@ -25,25 +23,7 @@ void SetPlayer(byte player) { state_.player = player; }
 
 byte GetPlayer() { return state_.player; }
 
-void SetMapRequestedFace(byte connected_face) {
-  state_.map_requested_face = connected_face;
-}
-
-byte GetMapRequestedFace() { return state_.map_requested_face; }
-
 void Render() {
-  FaceValue face_value = {0, false, 0};
-
-  FOREACH_FACE(face) {
-    if (face == GetMapRequestedFace()) {
-      face_value.map_requested = true;
-    } else {
-      face_value.map_requested = false;
-    }
-
-    setValueSentOnFace(face_value.as_byte, face);
-  }
-
   if (GetLevelSelection()) {
     setColor(MAKECOLOR_5BIT_RGB(8, 8, 8));
     for (byte face = 0; face <= GetAILevel(); ++face) {
@@ -59,13 +39,12 @@ void Render() {
     return;
   }
 
-  switch (game::state::Get()) {
-    case GAME_STATE_PLAY:
-      game::state::play::Render();
-      break;
-    default:
-      game::state::generic::Render();
-      break;
+  byte state = game::state::Get();
+  if (state > GAME_STATE_SETUP_VALIDATE && state < GAME_STATE_END) {
+    // We only care about the play state.
+    game::state::play::Render();
+  } else {
+    game::state::generic::Render();
   }
 }
 
@@ -84,7 +63,7 @@ bool GetLevelSelection() { return !state_.level_selection_timer_.isExpired(); }
 
 void Reset() {
   state_.player = 0;
-  state_.map_requested_face = FACE_COUNT;
+  state_.ai_level = 0;
 }
 
 }  // namespace state

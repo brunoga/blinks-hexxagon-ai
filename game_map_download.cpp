@@ -3,7 +3,7 @@
 #include <blinklib.h>
 #include <string.h>
 
-#include "blink_state.h"
+#include "blink_state_face.h"
 #include "game_map.h"
 #include "game_state.h"
 
@@ -26,57 +26,43 @@ namespace download {
 
 static byte index_;
 static byte state_;
-
-static void update_map_requested_face() {
-  byte map_requested_face = blink::state::GetMapRequestedFace();
-
-  // Check if we are currently connected.
-  if (map_requested_face != FACE_COUNT) {
-    // We are, did we get disconnected?
-    if (isValueReceivedOnFaceExpired(map_requested_face)) {
-      Reset();
-
-      blink::state::SetMapRequestedFace(FACE_COUNT);
-    }
-
-    return;
-  }
-
-  // We need a map. Search for a face to request it from.
-  FOREACH_FACE(face) {
-    if (!isValueReceivedOnFaceExpired(face)) {
-      // Found a face to hopefuly request a map from.
-      blink::state::SetMapRequestedFace(face);
-
-      return;
-    }
-  }
-}
+static byte previous_hexxagon_face_ = FACE_COUNT;
 
 bool Process() {
-  update_map_requested_face();
+  byte current_hexxagon_face = blink::state::face::handler::HexxagonFace();
+  if (current_hexxagon_face != previous_hexxagon_face_) {
+    if (previous_hexxagon_face_ != FACE_COUNT) {
+      resetPendingDatagramOnFace(previous_hexxagon_face_);
+    }
 
-  byte face = blink::state::GetMapRequestedFace();
+    index_ = 0;
+    state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
+    previous_hexxagon_face_ = current_hexxagon_face;
+  }
 
-  if (face == FACE_COUNT || Downloaded()) return false;
+  if (current_hexxagon_face == FACE_COUNT || Downloaded()) {
+    return false;
+  }
 
-  byte len = getDatagramLengthOnFace(face);
+  game::map::Data* map_data = game::map::Get();
+
+  byte len = getDatagramLengthOnFace(current_hexxagon_face);
 
   if (len > 0) {
     switch (state_) {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
         if (len == GAME_MAP_DOWNLOAD_METADATA_SIZE &&
-            getDatagramOnFace(face)[0] == MESSAGE_MAP_DOWNLOAD) {
-          game::map::SetSize(getDatagramOnFace(face)[1]);
+            getDatagramOnFace(current_hexxagon_face)[0] ==
+                MESSAGE_MAP_DOWNLOAD) {
+          game::map::SetSize(getDatagramOnFace(current_hexxagon_face)[1]);
 
           // TODO(bga): Add a function to do this as it will also be done in
           // game message.
-          game::state::Data data;
-          data.as_byte = getDatagramOnFace(face)[2];
+          game::state::Data data = {
+              .as_byte = getDatagramOnFace(current_hexxagon_face)[2]};
 
           game::state::Set(data.state, true);
-          game::state::SetSpecific(data.specific_state, true);
-          game::state::SetPlayer(data.next_player + 1);
+          game::state::SetPlayer(data.next_player);
 
           state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         }
@@ -87,25 +73,24 @@ bool Process() {
         bool is_last_chunk_len = (((len / 2) + index_) == game::map::GetSize());
 
         if (is_chunk_len || is_last_chunk_len) {
-          memcpy(&(game::map::Get()[index_]), getDatagramOnFace(face), len);
+          memcpy(&(game::map::Get()[index_]),
+                 getDatagramOnFace(current_hexxagon_face), len);
           index_ += (len / 2);
         }
         break;
     }
 
-    markDatagramReadOnFace(face);
+    markDatagramReadOnFace(current_hexxagon_face);
   }
 
   return true;
 }
 
-bool Downloaded() {
-  return ((game::map::GetSize() > 0) && (index_ == game::map::GetSize()));
-}
+bool Downloaded() { return (index_ != 0) && (index_ == game::map::GetSize()); }
 
 void Reset() {
-  state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
   index_ = 0;
+  state_ = GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA;
 }
 
 }  // namespace download

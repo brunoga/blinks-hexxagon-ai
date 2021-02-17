@@ -9,8 +9,6 @@ namespace game {
 struct State {
   byte current;
   byte previous;
-  byte current_specific;
-  byte previous_specific;
   byte player;
   bool from_network;
 };
@@ -27,48 +25,18 @@ void Set(byte state, bool from_network) {
 
 byte __attribute__((noinline)) Get() { return state_.current; }
 
-void SetSpecific(byte specific_state, bool from_network) {
-  state_.previous_specific = state_.current_specific;
-  state_.current_specific = specific_state;
-
-  state_.from_network = from_network;
-}
-
-byte GetSpecific() { return state_.current_specific; }
-
 void SetPlayer(byte player) { state_.player = player; }
 
 byte __attribute__((noinline)) GetPlayer() { return state_.player; }
 
-void NextPlayer() {
-  byte current_player = GetPlayer();
-
-  byte next_player = game::player::GetNext(current_player);
-  while (((game::map::GetStatistics().player[next_player].blink_count == 0) ||
-          (next_player == 0) ||
-          !game::map::GetStatistics().player[next_player].can_move) &&
-         (next_player != current_player)) {
-    next_player = game::player::GetNext(next_player);
-  }
-
-  SetPlayer(next_player);
-}
-
 void Reset() {
   state_.current = GAME_STATE_IDLE;
   state_.previous = GAME_STATE_IDLE;
-  state_.current_specific = 0;
-  state_.previous_specific = 0;
   state_.player = 0;
   state_.from_network = false;
 }
 
-bool Changed(bool include_specific) {
-  return include_specific
-             ? state_.current != state_.previous ||
-                   state_.current_specific != state_.previous_specific
-             : state_.current != state_.previous;
-}
+bool Changed() { return state_.current != state_.previous; }
 
 bool FromNetwork() { return state_.from_network; }
 

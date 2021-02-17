@@ -24,7 +24,9 @@ static bool target_done_;
 void Handler() {
   bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
-  switch (game::state::GetSpecific()) {
+  switch (game::state::Get()) {
+    case GAME_STATE_PLAY:
+      /* FALLTHROUGH */
     case GAME_STATE_PLAY_SELECT_ORIGIN:
       if (game::state::Changed()) {
         got_move_ = false;

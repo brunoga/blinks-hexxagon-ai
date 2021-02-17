@@ -2,7 +2,8 @@
 
 #include <string.h>
 
-#include "blink_state.h"
+//#include "blink_state.h"
+#include "blink_state_face.h"
 #include "game_map.h"
 #include "game_state.h"
 #include "render_animation.h"
@@ -11,7 +12,6 @@
 #define MESSAGE_GAME_STATE_CHANGE 1
 #define MESSAGE_SELECT_ORIGIN 2
 #define MESSAGE_SELECT_TARGET 3
-
 namespace game {
 
 namespace message {
@@ -23,9 +23,7 @@ static void game_state_change(const byte* payload) {
   data.as_byte = payload[0];
 
   game::state::Set(data.state, true);
-  game::state::SetSpecific(data.specific_state, true);
-  game::state::SetPlayer(data.next_player +
-                         1);  // TODO(bga): This limits us to 4 players.
+  game::state::SetPlayer(data.next_player);
 }
 
 static void select_origin(const byte* payload) {
@@ -64,6 +62,9 @@ void Process() {
 
 static bool sendMessage(byte message_id, const byte* payload,
                         byte payload_size) {
+  byte hexxagon_face = blink::state::face::handler::HexxagonFace();
+  if (hexxagon_face == FACE_COUNT) return false;
+
   broadcast::Message message;
   message.header.id = message_id;
   message.header.sequence = (last_sequence_ + 1) % 16;
@@ -73,8 +74,7 @@ static bool sendMessage(byte message_id, const byte* payload,
     memcpy(message.payload, payload, payload_size);
   }
 
-  return sendDatagramOnFace(&message, payload_size + 1,
-                            blink::state::GetMapRequestedFace());
+  return sendDatagramOnFace(&message, payload_size + 1, hexxagon_face);
 }
 
 bool SendSelectOrigin(int8_t x, int8_t y) {

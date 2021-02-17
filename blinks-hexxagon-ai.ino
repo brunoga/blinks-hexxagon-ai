@@ -1,6 +1,7 @@
 #include <blinklib.h>
 
 #include "blink_state.h"
+#include "blink_state_face.h"
 #include "game_map.h"
 #include "game_map_download.h"
 #include "game_message.h"
@@ -16,27 +17,25 @@ void setup() {
 }
 
 void loop() {
+  blink::state::face::handler::ProcessTop();
+
   bool button_clicked = util::NoSleepButtonSingleClicked();
   bool button_double_clicked = buttonDoubleClicked();
 
   if (!game::map::download::Process()) {
     game::message::Process();
 
-    switch (game::state::Get()) {
-      case GAME_STATE_PLAY:
-        game::state::play::Handler();
-        break;
-      default:
-        // We reset the map whenever we get to any state that is not the play
-        // one. A new map will be automatically downloaded when we are back to
-        // the play state in the game.
-        game::map::Reset();
-        game::map::download::Reset();
-        break;
+    byte state = game::state::Get();
+    if (state > GAME_STATE_SETUP_VALIDATE && state < GAME_STATE_END) {
+      // We only care about the play state.
+      game::state::play::Handler();
+    } else {
+      // We reset the map whenever we get to any state that is not the play
+      // one. A new map will be automatically downloaded when we are back to
+      // the play state in the game.
+      game::map::Reset();
+      game::map::download::Reset();
     }
-
-    game::state::Set(game::state::Get());
-    game::state::SetSpecific(game::state::GetSpecific());
   }
 
   if (!game::map::download::Downloaded()) {
@@ -57,4 +56,8 @@ void loop() {
   }
 
   blink::state::Render();
+
+  hasWoken();
+
+  blink::state::face::handler::ProcessBottom();
 }
