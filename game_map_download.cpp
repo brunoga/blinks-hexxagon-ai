@@ -44,8 +44,6 @@ bool Process() {
     return false;
   }
 
-  game::map::Data* map_data = game::map::Get();
-
   byte len = getDatagramLengthOnFace(current_hexxagon_face);
 
   if (len > 0) {
