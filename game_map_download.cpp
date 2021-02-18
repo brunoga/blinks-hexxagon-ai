@@ -77,9 +77,14 @@ bool Process() {
         }
         break;
     }
-
-    markDatagramReadOnFace(current_hexxagon_face);
   }
+
+  // Mark datagram read on all faces as we are processing the map and need to
+  // make sure we are not blocking messages on other faces.
+  //
+  // TODO(bga): We can improve this by handling the normal message processing
+  // and the map download processing in the same loop.
+  FOREACH_FACE(face) { markDatagramReadOnFace(face); }
 
   return true;
 }
