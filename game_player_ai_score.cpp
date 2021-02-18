@@ -5,6 +5,11 @@
 
 // Use integer coeficients to avoid floating point operations.
 #define GAME_PLAYER_AI_SCORE_BORDER_SCORE 1
+#define GAME_PLAYER_AI_SCORE_NO_JUMP_SCORE \
+  10  // Half of the standard multiplier below so that we will still prefer to
+      // capture more pieces when there are only 2 enemy pieces at the target
+      // position. This might be overfitting so double check. It does fixes some
+      // pathological cases.
 #define GAME_PLAYER_AI_SCORE_JOIN_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_STANDARD_MULTIPLIER 20
@@ -61,7 +66,7 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
     int16_t origin_player_score =
         (target_is_jump ? -(origin_player_neighbors *
                             GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER)
-                        : GAME_PLAYER_AI_SCORE_STANDARD_MULTIPLIER);
+                        : GAME_PLAYER_AI_SCORE_NO_JUMP_SCORE);
 
     // Borders are better than no borders, so we give a small score boost if we
     // duplicate/move to a border.
