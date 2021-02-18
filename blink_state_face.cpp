@@ -31,13 +31,15 @@ void ProcessTop() {
 }
 
 void ProcessBottom() {
-  Value output_value = {/*unused=*/0,
-                        /*hexxagon=*/false,
-                        /*color_override=*/false,
-                        /*reset_state=*/false,
-                        /*ai=*/true,
-                        /*player=*/0};
-  setValueSentOnAllFaces(output_value.as_byte);
+  FOREACH_FACE(face) {
+    Value output_value = {/*map_requested=*/face == hexxagon_face_,
+                          /*hexxagon=*/false,
+                          /*color_override=*/false,
+                          /*reset_state=*/false,
+                          /*ai=*/true,
+                          /*player=*/0};
+    setValueSentOnFace(output_value.as_byte, face);
+  }
 }
 
 byte HexxagonFace() { return hexxagon_face_; }
