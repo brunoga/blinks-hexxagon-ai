@@ -8,8 +8,6 @@
 #include "game_player_ai_score.h"
 #include "game_state.h"
 
-#define GAME_STATE_PLAY_WAIT_TIMEOUT 500
-
 namespace game {
 
 namespace state {
@@ -23,8 +21,6 @@ static bool got_move_;
 static bool origin_done_;
 static bool target_done_;
 
-static Timer wait_timer_;
-
 void Handler() {
   bool current_player = (game::state::GetPlayer() == blink::state::GetPlayer());
 
@@ -34,10 +30,9 @@ void Handler() {
         got_move_ = false;
         origin_done_ = false;
         target_done_ = false;
-        wait_timer_.set(GAME_STATE_PLAY_WAIT_TIMEOUT);
       }
 
-      if (!current_player || origin_done_ || !wait_timer_.isExpired()) {
+      if (!current_player || origin_done_) {
         return;
       }
 
@@ -78,14 +73,11 @@ void Handler() {
       if (game::message::SendSelectOrigin(origin_.x, origin_.y)) {
         game::map::SetMoveOrigin(origin_.x, origin_.y);
         origin_done_ = true;
-
-        wait_timer_.set(GAME_STATE_PLAY_WAIT_TIMEOUT);
       }
 
       break;
     case GAME_STATE_PLAY_SELECT_TARGET:
-      if (!current_player || !got_move_ || target_done_ ||
-          !wait_timer_.isExpired()) {
+      if (!current_player || !got_move_ || target_done_) {
         return;
       }
 
