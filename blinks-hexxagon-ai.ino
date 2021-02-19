@@ -26,7 +26,7 @@ void loop() {
     game::message::Process();
 
     byte state = game::state::Get();
-    if (state > GAME_STATE_SETUP_VALIDATE && state < GAME_STATE_END) {
+    if (state > GAME_STATE_PLAY && state < GAME_STATE_END) {
       // We only care about the play state.
       game::state::play::Handler();
     } else {
@@ -35,6 +35,7 @@ void loop() {
       // the play state in the game.
       game::map::Reset();
       game::map::download::Reset();
+      game::state::play::Reset();  // Just in case.
     }
 
     game::state::Set(state);

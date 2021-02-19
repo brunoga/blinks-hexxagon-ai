@@ -27,9 +27,7 @@ void Handler() {
   switch (game::state::Get()) {
     case GAME_STATE_PLAY_SELECT_ORIGIN:
       if (game::state::Changed()) {
-        got_move_ = false;
-        origin_done_ = false;
-        target_done_ = false;
+        Reset();
       }
 
       if (!current_player || origin_done_) {
@@ -91,6 +89,12 @@ void Handler() {
       game::map::CommitMove();
       break;
   }
+}
+
+void Reset() {
+  got_move_ = false;
+  origin_done_ = false;
+  target_done_ = false;
 }
 
 }  // namespace play
