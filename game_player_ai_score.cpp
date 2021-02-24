@@ -6,10 +6,7 @@
 // Use integer coeficients to avoid floating point operations.
 #define GAME_PLAYER_AI_SCORE_BORDER_SCORE 1
 #define GAME_PLAYER_AI_SCORE_NO_JUMP_SCORE \
-  10  // Half of the standard multiplier below so that we will still prefer to
-      // capture more pieces when there are only 2 enemy pieces at the target
-      // position. This might be overfitting so double check. It does fixes some
-      // pathological cases.
+  20  // Jump costs 1 captured position.
 #define GAME_PLAYER_AI_SCORE_JOIN_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_STANDARD_MULTIPLIER 20
