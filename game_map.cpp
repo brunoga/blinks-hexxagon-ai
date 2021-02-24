@@ -71,14 +71,8 @@ void ComputeMapStats() {
     stats_.player[map_data.player].blink_count++;
 
     // Update player can move.
-    for (byte j = 0; j < index_; ++j) {
-      if ((map_[j].player == 0) &&
-          (position::coordinates::Distance(
-               {(int8_t)map_data.x, (int8_t)map_data.y},
-               {(int8_t)map_[j].x, (int8_t)map_[j].y}) <= 2)) {
-        stats_.player[map_data.player].can_move = true;
-        break;
-      }
+    if (can_move(map_data)) {
+      stats_.player[map_data.player].can_move = true;
     }
 
     // Update empty space in range.
