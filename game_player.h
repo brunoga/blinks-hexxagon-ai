@@ -3,7 +3,10 @@
 
 #include <blinklib.h>
 
+// Including 0 (no player)
 #define GAME_PLAYER_MAX_PLAYERS 5
+
+#define GAME_PLAYER_NO_PLAYER 0
 
 namespace game {
 
