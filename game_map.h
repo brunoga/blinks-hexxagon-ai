@@ -41,7 +41,7 @@ position::Coordinates GetMoveTarget();
 
 // Computes the player move from origin to destination, updating the game
 // map accordingly.
-void CommitMove();
+void CommitMove(bool use_scratch = false);
 
 const Statistics& GetStatistics();
 

@@ -4,8 +4,8 @@
 #include "game_map.h"
 #include "game_message.h"
 #include "game_player_ai_conditional_random.h"
-#include "game_player_ai_random.h"
 #include "game_player_ai_score.h"
+#include "game_player_ai_score_counter.h"
 #include "game_state.h"
 
 namespace game {
@@ -39,20 +39,17 @@ void Handler() {
 
         switch (blink::state::GetAILevel()) {
           case 0:
-            got_move_ = game::player::ai::random::GetMove(&origin_, &target_);
-            break;
-          case 1:
             got_move_ = game::player::ai::conditional_random::GetMove(&origin_,
                                                                       &target_);
             break;
-          case 2:
+          case 1:
             got_move_ =
                 random(9) > 6
                     ? game::player::ai::score::GetMove(&origin_, &target_)
                     : game::player::ai::conditional_random::GetMove(&origin_,
                                                                     &target_);
             break;
-          case 3:
+          case 2:
             got_move_ =
                 random(9) < 3
                     ? game::player::ai::score::GetMove(&origin_, &target_)
@@ -60,12 +57,18 @@ void Handler() {
                                                                     &target_);
 
             break;
-          case 4:
+          case 3:
             got_move_ = game::player::ai::score::GetMove(&origin_, &target_);
+            break;
+          case 4:
+            got_move_ =
+                game::player::ai::score::counter::GetMove(&origin_, &target_);
             break;
         }
 
-        if (!got_move_) return;
+        if (!got_move_) {
+          return;
+        }
       }
 
       if (game::message::SendSelectOrigin(origin_.x, origin_.y)) {

@@ -1,5 +1,5 @@
-#ifndef GAME_PLAYER_AI_RANDOM_H_
-#define GAME_PLAYER_AI_RANDOM_H_
+#ifndef GAME_PLAYER_AI_SCORE_COUNTER_H_
+#define GAME_PLAYER_AI_SCORE_COUNTER_H_
 
 #include "src/blinks-position/coordinates.h"
 
@@ -9,11 +9,15 @@ namespace player {
 
 namespace ai {
 
-namespace random {
+namespace score {
+
+namespace counter {
 
 bool GetMove(position::Coordinates* origin, position::Coordinates* target);
 
-}  // namespace random
+}  // namespace counter
+
+}  // namespace score
 
 }  // namespace ai
 

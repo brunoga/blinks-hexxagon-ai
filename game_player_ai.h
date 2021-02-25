@@ -9,8 +9,10 @@ namespace player {
 
 namespace ai {
 
-bool GetRandomMove(byte player, position::Coordinates* origin,
-                   position::Coordinates* target);
+bool GetRandomMove(byte player, ::position::Coordinates* origin,
+                   ::position::Coordinates* target);
+int16_t ComputeMoveScore(byte player, const ::position::Coordinates& origin,
+                         const ::position::Coordinates& target);
 
 }  // namespace ai
 

@@ -33,6 +33,8 @@ bool Process() {
   if (current_hexxagon_face != previous_hexxagon_face_) {
     if (previous_hexxagon_face_ != FACE_COUNT) {
       resetPendingDatagramOnFace(previous_hexxagon_face_);
+
+      game::state::Set(GAME_STATE_IDLE);
     }
 
     index_ = 0;
