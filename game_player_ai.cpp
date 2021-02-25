@@ -20,7 +20,7 @@ bool GetRandomMove(byte player, position::Coordinates* origin,
                    position::Coordinates* target) {
   // Count number of possible moves.
   word num_moves = 0;
-  while (game::map::GetNextPossibleMove(player, origin, target)) {
+  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
     num_moves++;
   }
 
@@ -31,7 +31,7 @@ bool GetRandomMove(byte player, position::Coordinates* origin,
 
   // Search for it and return when found.
   word current_index = 0;
-  while (game::map::GetNextPossibleMove(player, origin, target)) {
+  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
     if (current_index == move_index) {
       return true;
     }
@@ -43,19 +43,22 @@ bool GetRandomMove(byte player, position::Coordinates* origin,
   return false;
 }
 
-int16_t ComputeMoveScore(byte player, const ::position::Coordinates& origin,
+int16_t ComputeMoveScore(byte player, bool use_scratch,
+                         const ::position::Coordinates& origin,
                          const ::position::Coordinates& target) {
   byte origin_total_neighbors;
   byte origin_player_neighbors;
   byte origin_enemy_neighbors;
-  game::map::CountNeighbors(player, origin, &origin_total_neighbors,
-                            &origin_player_neighbors, &origin_enemy_neighbors);
+  game::map::CountNeighbors(player, origin, use_scratch,
+                            &origin_total_neighbors, &origin_player_neighbors,
+                            &origin_enemy_neighbors);
 
   byte target_total_neighbors;
   byte target_player_neighbors;
   byte target_enemy_neighbors;
-  game::map::CountNeighbors(player, target, &target_total_neighbors,
-                            &target_player_neighbors, &target_enemy_neighbors);
+  game::map::CountNeighbors(player, target, use_scratch,
+                            &target_total_neighbors, &target_player_neighbors,
+                            &target_enemy_neighbors);
 
   // Are we moving to a border position?
   bool target_is_border = (target_total_neighbors < FACE_COUNT);

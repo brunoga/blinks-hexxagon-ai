@@ -26,7 +26,7 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
     byte total_neighbors;
     byte player_neighbors;
     byte enemy_neighbors;
-    game::map::CountNeighbors(blink::state::GetPlayer(), *target,
+    game::map::CountNeighbors(blink::state::GetPlayer(), *target, false,
                               &total_neighbors, &player_neighbors,
                               &enemy_neighbors);
     if (enemy_neighbors > 0) {

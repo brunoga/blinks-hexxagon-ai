@@ -39,16 +39,17 @@ void Handler() {
 
         switch (blink::state::GetAILevel()) {
           case 0:
-            got_move_ = game::player::ai::conditional_random::GetMove(&origin_,
-                                                                      &target_);
-            break;
+            // got_move_ =
+            // game::player::ai::conditional_random::GetMove(&origin_,
+            //                                                          &target_);
+            // break;
           case 1:
-            got_move_ =
-                random(9) > 6
-                    ? game::player::ai::score::GetMove(&origin_, &target_)
-                    : game::player::ai::conditional_random::GetMove(&origin_,
-                                                                    &target_);
-            break;
+            // got_move_ =
+            //    random(9) > 6
+            //        ? game::player::ai::score::GetMove(&origin_, &target_)
+            //        : game::player::ai::conditional_random::GetMove(&origin_,
+            //                                                        &target_);
+            // break;
           case 2:
             got_move_ =
                 random(9) < 3
@@ -89,7 +90,7 @@ void Handler() {
 
       break;
     case GAME_STATE_PLAY_RESOLVE_MOVE:
-      game::map::CommitMove();
+      game::map::CommitMove(false);
       break;
   }
 }

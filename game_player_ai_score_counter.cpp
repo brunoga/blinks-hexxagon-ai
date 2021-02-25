@@ -17,12 +17,12 @@ namespace counter {
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   position::Coordinates possible_origin;
   position::Coordinates possible_target;
-  int16_t selected_score = -32768;
+  int16_t selected_score = -1000;
 
-  while (game::map::GetNextPossibleMove(blink::state::GetPlayer(),
+  while (game::map::GetNextPossibleMove(blink::state::GetPlayer(), false,
                                         &possible_origin, &possible_target)) {
     // Compute score for current possible move.
-    int16_t player_score = ComputeMoveScore(blink::state::GetPlayer(),
+    int16_t player_score = ComputeMoveScore(blink::state::GetPlayer(), false,
                                             possible_origin, possible_target);
 
     if (player_score < selected_score) {
@@ -38,15 +38,15 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
     game::map::CommitMove(true);
 
     // Now compute the highest counter score for all remaining players.
-    int16_t highest_counter_score = -32768;
+    int16_t highest_counter_score = -1000;
     for (byte i = 1; i < GAME_PLAYER_MAX_PLAYERS; i++) {
       if (i != blink::state::GetPlayer()) {
         position::Coordinates counter_possible_origin;
         position::Coordinates counter_possible_target;
-        while (game::map::GetNextPossibleMove(i, &counter_possible_origin,
+        while (game::map::GetNextPossibleMove(i, true, &counter_possible_origin,
                                               &counter_possible_target)) {
-          int16_t counter_score = ComputeMoveScore(i, counter_possible_origin,
-                                                   counter_possible_target);
+          int16_t counter_score = ComputeMoveScore(
+              i, true, counter_possible_origin, counter_possible_target);
           if (counter_score > highest_counter_score) {
             highest_counter_score = counter_score;
           }

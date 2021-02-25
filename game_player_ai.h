@@ -11,7 +11,8 @@ namespace ai {
 
 bool GetRandomMove(byte player, ::position::Coordinates* origin,
                    ::position::Coordinates* target);
-int16_t ComputeMoveScore(byte player, const ::position::Coordinates& origin,
+int16_t ComputeMoveScore(byte player, bool use_scratch,
+                         const ::position::Coordinates& origin,
                          const ::position::Coordinates& target);
 
 }  // namespace ai

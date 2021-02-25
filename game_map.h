@@ -41,7 +41,7 @@ position::Coordinates GetMoveTarget();
 
 // Computes the player move from origin to destination, updating the game
 // map accordingly.
-void CommitMove(bool use_scratch = false);
+void CommitMove(bool use_scratch);
 
 const Statistics& GetStatistics();
 
@@ -52,13 +52,14 @@ void Reset();
 
 // AI-specific functions.
 
-bool GetNextPossibleMove(byte player, position::Coordinates* origin,
+bool GetNextPossibleMove(byte player, bool use_scratch,
+                         position::Coordinates* origin,
                          position::Coordinates* target);
 void ResetPossibleMoveIterators();
 
 void CountNeighbors(byte player, position::Coordinates coordinates,
-                    byte* total_neighbors, byte* player_neighbors,
-                    byte* enemy_neighbors);
+                    bool use_scratch, byte* total_neighbors,
+                    byte* player_neighbors, byte* enemy_neighbors);
 
 }  // namespace map
 

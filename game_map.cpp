@@ -36,11 +36,13 @@ static MoveData move_data_;
 static byte origin_iterator_[GAME_PLAYER_MAX_PLAYERS];
 static byte target_iterator_[GAME_PLAYER_MAX_PLAYERS];
 
-static byte get_player_at_index(byte map_index) {
-  for (byte i = 0; i < scratch_index_; i++) {
-    if (scratch_[i].map_index == map_index) {
-      // Found in scratch, return it.
-      return scratch_[i].player;
+static byte get_player_at_index(byte map_index, bool use_scratch) {
+  if (use_scratch) {
+    for (byte i = 0; i < scratch_index_; i++) {
+      if (scratch_[i].map_index == map_index) {
+        // Found in scratch, return it.
+        return scratch_[i].player;
+      }
     }
   }
 
@@ -52,7 +54,7 @@ update_blinks(position::Coordinates coordinates, byte player,
               bool update_neighbors, bool use_scratch) {
   for (byte i = 0; i < index_; ++i) {
     if (((map_[i].x == coordinates.x) && (map_[i].y == coordinates.y)) ||
-        (update_neighbors && (get_player_at_index(i) != 0) &&
+        (update_neighbors && (get_player_at_index(i, use_scratch) != 0) &&
          (position::coordinates::Distance(
               coordinates, {(int8_t)map_[i].x, (int8_t)map_[i].y}) == 1))) {
       // This is either the position we are updating or we also want to update
@@ -69,9 +71,9 @@ update_blinks(position::Coordinates coordinates, byte player,
   }
 }
 
-static bool can_move(const Data& data) {
+static bool can_move(const Data& data, bool use_scratch) {
   for (byte i = 0; i < index_; ++i) {
-    if ((get_player_at_index(i) == 0) &&
+    if ((get_player_at_index(i, use_scratch) == 0) &&
         (position::coordinates::Distance(
              {(int8_t)data.x, (int8_t)data.y},
              {(int8_t)map_[i].x, (int8_t)map_[i].y}) <= 2)) {
@@ -97,7 +99,7 @@ void ComputeMapStats() {
     stats_.player[map_data.player].blink_count++;
 
     // Update player can move.
-    if (can_move(map_data)) {
+    if (can_move(map_data, false)) {
       stats_.player[map_data.player].can_move = true;
     }
 
@@ -162,15 +164,19 @@ void Reset() {
   ComputeMapStats();
 }
 
-bool GetNextPossibleMove(byte player, position::Coordinates* origin,
+bool GetNextPossibleMove(byte player, bool use_scratch,
+                         position::Coordinates* origin,
                          position::Coordinates* target) {
   for (; origin_iterator_[player] < index_; origin_iterator_[player]++) {
-    if (get_player_at_index(origin_iterator_[player]) != player) continue;
+    if (get_player_at_index(origin_iterator_[player], use_scratch) != player) {
+      continue;
+    }
 
-    if (!can_move(map_[origin_iterator_[player]])) continue;
+    if (!can_move(map_[origin_iterator_[player]], use_scratch)) continue;
 
     for (; target_iterator_[player] < index_; target_iterator_[player]++) {
-      if (get_player_at_index(target_iterator_[player]) != 0) continue;
+      if (get_player_at_index(target_iterator_[player], use_scratch) != 0)
+        continue;
 
       if (position::coordinates::Distance(
               {(int8_t)map_[origin_iterator_[player]].x,
@@ -202,13 +208,13 @@ bool GetNextPossibleMove(byte player, position::Coordinates* origin,
 }
 
 void CountNeighbors(byte player, position::Coordinates coordinates,
-                    byte* total_neighbors, byte* player_neighbors,
-                    byte* enemy_neighbors) {
+                    bool use_scratch, byte* total_neighbors,
+                    byte* player_neighbors, byte* enemy_neighbors) {
   *total_neighbors = 0;
   *player_neighbors = 0;
   *enemy_neighbors = 0;
   for (byte i = 0; i < index_; ++i) {
-    byte map_player = get_player_at_index(i);
+    byte map_player = get_player_at_index(i, use_scratch);
     if (position::coordinates::Distance(
             coordinates, {(int8_t)map_[i].x, (int8_t)map_[i].y}) == 1) {
       (*total_neighbors)++;
