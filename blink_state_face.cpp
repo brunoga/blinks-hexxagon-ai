@@ -12,7 +12,7 @@ static Value previous_value_[FACE_COUNT];
 
 static byte hexxagon_face_;
 
-void ProcessTop() {
+void __attribute__((noinline)) ProcessTop() {
   hexxagon_face_ = FACE_COUNT;
 
   FOREACH_FACE(face) {

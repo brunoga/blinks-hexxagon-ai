@@ -21,7 +21,7 @@ namespace state {
 
 void SetPlayer(byte player) { state_.player = player; }
 
-byte GetPlayer() { return state_.player; }
+byte __attribute__((noinline)) GetPlayer() { return state_.player; }
 
 void Render() {
   if (GetLevelSelection()) {
