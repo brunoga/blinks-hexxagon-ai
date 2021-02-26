@@ -2,7 +2,6 @@
 
 #include "blink_state.h"
 #include "game_map.h"
-#include "game_player_ai.h"
 
 namespace game {
 
@@ -12,9 +11,35 @@ namespace ai {
 
 namespace conditional_random {
 
+static bool get_random_move(byte player, position::Coordinates* origin,
+                            position::Coordinates* target) {
+  // Count number of possible moves.
+  word num_moves = 0;
+  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
+    num_moves++;
+  }
+
+  if (num_moves == 0) return false;
+
+  // Pick one.
+  word move_index = ::random(num_moves - 1);
+
+  // Search for it and return when found.
+  word current_index = 0;
+  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
+    if (current_index == move_index) {
+      return true;
+    }
+
+    current_index++;
+  }
+
+  // We should never reach this, but just in case.
+  return false;
+}
+
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
-  while (game::player::ai::GetRandomMove(blink::state::GetPlayer(), origin,
-                                         target)) {
+  while (get_random_move(blink::state::GetPlayer(), origin, target)) {
     // We have a move. Check if it increases our number of pieces.
     if (position::coordinates::Distance(*origin, *target) == 1) {
       // It does. No need to check anything else.
@@ -37,8 +62,7 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
 
   // If we got to this point, we did not find any move that satisfies our
   // requirements. Return a random move.
-  return game::player::ai::GetRandomMove(blink::state::GetPlayer(), origin,
-                                         target);
+  return get_random_move(blink::state::GetPlayer(), origin, target);
 }
 
 }  // namespace conditional_random
