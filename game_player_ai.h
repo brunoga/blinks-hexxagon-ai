@@ -9,9 +9,10 @@ namespace player {
 
 namespace ai {
 
-int16_t ComputeMoveScore(byte player, bool use_scratch,
-                         const ::position::Coordinates& origin,
-                         const ::position::Coordinates& target);
+bool GetNextScoredPossibleMove(byte player, bool use_scratch,
+                               position::Coordinates* origin,
+                               position::Coordinates* target, int16_t* score,
+                               word* origin_iterator, word* target_iterator);
 
 }  // namespace ai
 

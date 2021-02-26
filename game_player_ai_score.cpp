@@ -12,25 +12,37 @@ namespace ai {
 
 namespace score {
 
+static position::Coordinates possible_origin_;
+static position::Coordinates possible_target_;
+static int16_t selected_score_ = -1000;
+
+static word origin_iterator_;
+static word target_iterator_;
+
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
-  position::Coordinates possible_origin;
-  position::Coordinates possible_target;
-  int16_t selected_score = -32768;
+  int16_t score = -1000;
 
-  while (game::map::GetNextPossibleMove(blink::state::GetPlayer(), false,
-                                        &possible_origin, &possible_target)) {
-    int16_t score = ComputeMoveScore(blink::state::GetPlayer(), false,
-                                     possible_origin, possible_target);
+  if (GetNextScoredPossibleMove(blink::state::GetPlayer(), false,
+                                &possible_origin_, &possible_target_, &score,
+                                &origin_iterator_, &target_iterator_)) {
+    if (score > selected_score_) {
+      *origin = possible_origin_;
+      *target = possible_target_;
 
-    if (score > selected_score) {
-      *origin = possible_origin;
-      *target = possible_target;
-
-      selected_score = score;
+      selected_score_ = score;
     }
+
+    return false;
   }
 
-  return true;
+  // TODO(bga): If we reached here, there are no more possible moves and this
+  // return below is not enough to indicate that. Maybe use an extra parameter
+  // to indicate end of moves so callers stop trying calling us?
+  bool result = (selected_score_ != -1000);
+
+  selected_score_ = -1000;
+
+  return result;
 }
 
 }  // namespace score

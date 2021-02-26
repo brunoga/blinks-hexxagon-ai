@@ -54,11 +54,11 @@ void Reset();
 
 bool GetNextPossibleMove(byte player, bool use_scratch,
                          position::Coordinates* origin,
-                         position::Coordinates* target);
-void ResetPossibleMoveIterators();
+                         position::Coordinates* target, word* origin_iterator,
+                         word* target_iterator);
 
-void CountNeighbors(byte player, position::Coordinates coordinates,
-                    bool use_scratch, byte* total_neighbors,
+void CountNeighbors(byte player, bool use_scratch,
+                    position::Coordinates coordinates, byte* total_neighbors,
                     byte* player_neighbors, byte* enemy_neighbors);
 
 }  // namespace map

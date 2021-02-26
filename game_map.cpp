@@ -33,9 +33,6 @@ struct MoveData {
 };
 static MoveData move_data_;
 
-static byte origin_iterator_[GAME_PLAYER_MAX_PLAYERS];
-static byte target_iterator_[GAME_PLAYER_MAX_PLAYERS];
-
 static byte get_player_at_index(byte map_index, bool use_scratch) {
   if (use_scratch) {
     for (byte i = 0; i < scratch_index_; i++) {
@@ -166,49 +163,47 @@ void Reset() {
 
 bool GetNextPossibleMove(byte player, bool use_scratch,
                          position::Coordinates* origin,
-                         position::Coordinates* target) {
-  for (; origin_iterator_[player] < index_; origin_iterator_[player]++) {
-    if (get_player_at_index(origin_iterator_[player], use_scratch) != player) {
-      continue;
-    }
+                         position::Coordinates* target, word* origin_iterator,
+                         word* target_iterator) {
+  while (*origin_iterator < index_) {
+    if (get_player_at_index(*origin_iterator, use_scratch) == player) {
+      while (*target_iterator < index_) {
+        if (get_player_at_index(*target_iterator, use_scratch) ==
+            GAME_PLAYER_NO_PLAYER) {
+          byte distance = position::coordinates::Distance(
+              {(int8_t)map_[*origin_iterator].x,
+               (int8_t)map_[*origin_iterator].y},
+              {(int8_t)map_[*target_iterator].x,
+               (int8_t)map_[*target_iterator].y});
 
-    if (!can_move(map_[origin_iterator_[player]], use_scratch)) continue;
+          if (distance <= 2) {
+            origin->x = map_[*origin_iterator].x;
+            origin->y = map_[*origin_iterator].y;
+            target->x = map_[*target_iterator].x;
+            target->y = map_[*target_iterator].y;
 
-    for (; target_iterator_[player] < index_; target_iterator_[player]++) {
-      if (get_player_at_index(target_iterator_[player], use_scratch) != 0)
-        continue;
+            (*target_iterator)++;
 
-      if (position::coordinates::Distance(
-              {(int8_t)map_[origin_iterator_[player]].x,
-               (int8_t)map_[origin_iterator_[player]].y},
-              {(int8_t)map_[target_iterator_[player]].x,
-               (int8_t)map_[target_iterator_[player]].y}) > 2) {
-        continue;
+            return true;
+          }
+        }
+
+        (*target_iterator)++;
       }
 
-      origin->x = map_[origin_iterator_[player]].x;
-      origin->y = map_[origin_iterator_[player]].y;
-      target->x = map_[target_iterator_[player]].x;
-      target->y = map_[target_iterator_[player]].y;
-
-      // Increase iterator otherwise on the next iteration we would be at the
-      // same point, which would lead us getting here again and so on, resulting
-      // in an possible infinite loop.
-      target_iterator_[player]++;
-
-      return true;
+      *target_iterator = 0;
     }
 
-    target_iterator_[player] = 0;
+    (*origin_iterator)++;
   }
 
-  origin_iterator_[player] = 0;
+  *origin_iterator = 0;
 
   return false;
 }
 
-void CountNeighbors(byte player, position::Coordinates coordinates,
-                    bool use_scratch, byte* total_neighbors,
+void CountNeighbors(byte player, bool use_scratch,
+                    position::Coordinates coordinates, byte* total_neighbors,
                     byte* player_neighbors, byte* enemy_neighbors) {
   *total_neighbors = 0;
   *player_neighbors = 0;
@@ -225,11 +220,6 @@ void CountNeighbors(byte player, position::Coordinates coordinates,
       }
     }
   }
-}
-
-void ResetPossibleMoveIterators() {
-  memset(&target_iterator_, 0, GAME_PLAYER_MAX_PLAYERS);
-  memset(&origin_iterator_, 0, GAME_PLAYER_MAX_PLAYERS);
 }
 
 }  // namespace map

@@ -16,20 +16,20 @@ namespace player {
 
 namespace ai {
 
-int16_t ComputeMoveScore(byte player, bool use_scratch,
-                         const ::position::Coordinates& origin,
-                         const ::position::Coordinates& target) {
+static int16_t compute_move_score(byte player, bool use_scratch,
+                                  const ::position::Coordinates& origin,
+                                  const ::position::Coordinates& target) {
   byte origin_total_neighbors;
   byte origin_player_neighbors;
   byte origin_enemy_neighbors;
-  game::map::CountNeighbors(player, origin, use_scratch,
+  game::map::CountNeighbors(player, use_scratch, origin,
                             &origin_total_neighbors, &origin_player_neighbors,
                             &origin_enemy_neighbors);
 
   byte target_total_neighbors;
   byte target_player_neighbors;
   byte target_enemy_neighbors;
-  game::map::CountNeighbors(player, target, use_scratch,
+  game::map::CountNeighbors(player, use_scratch, target,
                             &target_total_neighbors, &target_player_neighbors,
                             &target_enemy_neighbors);
 
@@ -66,6 +66,21 @@ int16_t ComputeMoveScore(byte player, bool use_scratch,
   // here.
   return target_enemies_score + target_player_score + origin_player_score +
          target_border_score;
+}
+
+bool __attribute__((noinline))
+GetNextScoredPossibleMove(byte player, bool use_scratch,
+                          position::Coordinates* origin,
+                          position::Coordinates* target, int16_t* score,
+                          word* origin_iterator, word* target_iterator) {
+  if (game::map::GetNextPossibleMove(player, use_scratch, origin, target,
+                                     origin_iterator, target_iterator)) {
+    *score = compute_move_score(player, use_scratch, *origin, *target);
+
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace ai

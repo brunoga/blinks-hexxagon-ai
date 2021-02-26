@@ -3,6 +3,8 @@
 #include "blink_state.h"
 #include "game_map.h"
 
+#define GAME_PLAYER_AI_CONDITIONAL_RANDOM_MAX_ATTEMPTS 5
+
 namespace game {
 
 namespace player {
@@ -11,58 +13,80 @@ namespace ai {
 
 namespace conditional_random {
 
+static word origin_iterator_;
+static word target_iterator_;
+
+static word num_possible_moves_;
+
 static bool get_random_move(byte player, position::Coordinates* origin,
                             position::Coordinates* target) {
-  // Count number of possible moves.
-  word num_moves = 0;
-  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
-    num_moves++;
+  if (num_possible_moves_ == 0) {
+    // Count number of possible moves.
+    while (game::map::GetNextPossibleMove(
+        player, false, origin, target, &origin_iterator_, &target_iterator_)) {
+      num_possible_moves_++;
+    }
+
+    if (num_possible_moves_ == 0) {
+      return false;
+    }
   }
 
-  if (num_moves == 0) return false;
-
   // Pick one.
-  word move_index = ::random(num_moves - 1);
+  word move_index = random(num_possible_moves_ - 1);
 
   // Search for it and return when found.
   word current_index = 0;
-  while (game::map::GetNextPossibleMove(player, false, origin, target)) {
+  while (game::map::GetNextPossibleMove(player, false, origin, target,
+                                        &origin_iterator_, &target_iterator_)) {
     if (current_index == move_index) {
-      return true;
+      break;
     }
 
     current_index++;
   }
 
-  // We should never reach this, but just in case.
-  return false;
+  origin_iterator_ = 0;
+  target_iterator_ = 0;
+
+  return true;
 }
 
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
-  while (get_random_move(blink::state::GetPlayer(), origin, target)) {
+  for (byte i = 0; i < GAME_PLAYER_AI_CONDITIONAL_RANDOM_MAX_ATTEMPTS; i++) {
+    if (!get_random_move(blink::state::GetPlayer(), origin, target)) {
+      return false;
+    }
+
     // We have a move. Check if it increases our number of pieces.
     if (position::coordinates::Distance(*origin, *target) == 1) {
       // It does. No need to check anything else.
+      num_possible_moves_ = 0;
       return true;
     }
 
-    // Ok, so this is a jump move. Check if we will capture at least one enemy
-    // piece.
+    // Ok, so this is a jump move. Check if we will capture at least one
+    // enemy piece.
     byte total_neighbors;
     byte player_neighbors;
     byte enemy_neighbors;
-    game::map::CountNeighbors(blink::state::GetPlayer(), *target, false,
+    game::map::CountNeighbors(blink::state::GetPlayer(), false, *target,
                               &total_neighbors, &player_neighbors,
                               &enemy_neighbors);
     if (enemy_neighbors > 0) {
       // Target position has at least 1 enemy neighbor.
+      num_possible_moves_ = 0;
       return true;
     }
   }
 
   // If we got to this point, we did not find any move that satisfies our
   // requirements. Return a random move.
-  return get_random_move(blink::state::GetPlayer(), origin, target);
+  bool result = get_random_move(blink::state::GetPlayer(), origin, target);
+
+  num_possible_moves_ = 0;
+
+  return result;
 }
 
 }  // namespace conditional_random

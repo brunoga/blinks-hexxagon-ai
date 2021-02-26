@@ -6,7 +6,7 @@
 #include "game_state_no_map_render.h"
 #include "game_state_play_render.h"
 
-#define BLINK_STATE_MAX_AI_LEVEL 4  // First level is 0.
+#define BLINK_STATE_MAX_AI_LEVEL 2  // First level is 0.
 #define BLINK_STATE_LEVEL_SELECTION_TIMEOUT 2000
 namespace blink {
 
