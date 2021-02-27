@@ -151,15 +151,12 @@ bool GetNextPossibleMove(byte player, bool use_scratch,
 void CountNeighbors(byte player, bool use_scratch,
                     position::Coordinates coordinates, byte* total_neighbors,
                     byte* player_neighbors, byte* enemy_neighbors) {
-  *total_neighbors = 0;
-  *player_neighbors = 0;
-  *enemy_neighbors = 0;
   for (byte i = 0; i < index_; ++i) {
     byte map_player = get_player_at_index(i, use_scratch);
     if (position::coordinates::Distance(
             coordinates, {(int8_t)map_[i].x, (int8_t)map_[i].y}) == 1) {
       (*total_neighbors)++;
-      if (map_player != 0 && map_player != player) {
+      if (map_player != GAME_PLAYER_NO_PLAYER && map_player != player) {
         (*enemy_neighbors)++;
       } else if (map_player == player) {
         (*player_neighbors)++;

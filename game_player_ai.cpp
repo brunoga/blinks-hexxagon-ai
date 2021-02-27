@@ -1,11 +1,12 @@
 #include "game_player_ai.h"
 
 #include "game_map.h"
+#include "game_state.h"
 
 // Use integer coeficients to avoid floating point operations.
 #define GAME_PLAYER_AI_SCORE_BORDER_SCORE 1
 #define GAME_PLAYER_AI_SCORE_NO_JUMP_SCORE \
-  10  // Jump costs 1/2 captured position.
+  20  // Jump costs 1 captured position.
 #define GAME_PLAYER_AI_SCORE_JOIN_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_STANDARD_MULTIPLIER 20
