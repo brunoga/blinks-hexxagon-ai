@@ -23,8 +23,6 @@ static byte index_;
 static Scratch scratch_[GAME_MAP_MAX_MODIFIED_POSITIONS_PER_PLAY];
 static byte scratch_index_;
 
-Statistics stats_;
-
 static bool move_commited_;
 
 struct MoveData {
@@ -68,48 +66,6 @@ update_blinks(position::Coordinates coordinates, byte player,
   }
 }
 
-static bool can_move(const Data& data, bool use_scratch) {
-  for (byte i = 0; i < index_; ++i) {
-    if ((get_player_at_index(i, use_scratch) == 0) &&
-        (position::coordinates::Distance(
-             {(int8_t)data.x, (int8_t)data.y},
-             {(int8_t)map_[i].x, (int8_t)map_[i].y}) <= 2)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-void ComputeMapStats() {
-  memset(&stats_, 0, sizeof(Statistics));
-
-  for (byte i = 0; i < index_; ++i) {
-    const Data& map_data = map_[i];
-    // Update number of players.
-    if (map_data.player != 0 &&
-        stats_.player[map_data.player].blink_count == 0) {
-      stats_.player_count++;
-    }
-
-    // Update player blink count.
-    stats_.player[map_data.player].blink_count++;
-
-    // Update player can move.
-    if (can_move(map_data, false)) {
-      stats_.player[map_data.player].can_move = true;
-    }
-
-    // Update empty space in range.
-    if (!(stats_.local_blink_empty_space_in_range)) {
-      stats_.local_blink_empty_space_in_range =
-          ((map_data.player == 0) &&
-           (position::Distance(position::Coordinates{
-                (int8_t)map_data.x, (int8_t)map_data.y}) <= 2));
-    }
-  }
-}
-
 Data* Get() { return map_; }
 
 byte GetSize() { return index_; }
@@ -143,22 +99,12 @@ void __attribute__((noinline)) CommitMove(bool use_scratch) {
 
   update_blinks(move_data_.target, game::state::GetPlayer(), true, use_scratch);
 
-  if (!use_scratch) ComputeMapStats();
-
   move_commited_ = true;
-}
-
-const Statistics& GetStatistics() { return stats_; }
-
-bool __attribute__((noinline)) ValidState() {
-  return (stats_.player[0].blink_count > 0) && (stats_.player_count > 1);
 }
 
 void Reset() {
   index_ = 0;
   scratch_index_ = 0;
-
-  ComputeMapStats();
 }
 
 bool GetNextPossibleMove(byte player, bool use_scratch,

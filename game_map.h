@@ -18,17 +18,6 @@ struct Data {
   uint16_t player : 4;
 };
 
-struct Statistics {
-  byte player_count;
-  struct {
-    byte blink_count : 7;
-    bool can_move : 1;
-  } player[GAME_PLAYER_MAX_PLAYERS];
-  bool local_blink_empty_space_in_range;
-};
-
-void ComputeMapStats();
-
 Data* Get();
 byte GetSize();
 void SetSize(byte size);
@@ -42,10 +31,6 @@ position::Coordinates GetMoveTarget();
 // Computes the player move from origin to destination, updating the game
 // map accordingly.
 void CommitMove(bool use_scratch);
-
-const Statistics& GetStatistics();
-
-bool ValidState();
 
 // Sets all map data to invalid values.
 void Reset();
