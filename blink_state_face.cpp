@@ -1,5 +1,6 @@
 #include "blink_state_face.h"
 
+#include "game_state.h"
 namespace blink {
 
 namespace state {
@@ -24,6 +25,11 @@ void __attribute__((noinline)) ProcessTop() {
 
     if (value.hexxagon && !value.ai) {
       hexxagon_face_ = face;
+    }
+
+    if (value.reset_state != previous_value_[face].reset_state &&
+        value.reset_state) {
+      game::state::Set(GAME_STATE_IDLE);
     }
 
     previous_value_[face] = value;
