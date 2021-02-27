@@ -5,7 +5,7 @@
 // Use integer coeficients to avoid floating point operations.
 #define GAME_PLAYER_AI_SCORE_BORDER_SCORE 1
 #define GAME_PLAYER_AI_SCORE_NO_JUMP_SCORE \
-  20  // Jump costs 1 captured position.
+  10  // Jump costs 1/2 captured position.
 #define GAME_PLAYER_AI_SCORE_JOIN_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER 4
 #define GAME_PLAYER_AI_SCORE_STANDARD_MULTIPLIER 20
@@ -51,7 +51,7 @@ static int16_t compute_move_score(byte player, bool use_scratch,
 
   // Score for keeping the origin position. Currently we get a fixed positive
   // score if we decide to not jump or a negative score based on the number
-  // of player neighboors we are leaving behind otherwise.
+  // of player neighbors we are leaving behind otherwise.
   int16_t origin_player_score =
       (target_is_jump
            ? -(origin_player_neighbors * GAME_PLAYER_AI_SCORE_LEAVE_MULTIPLIER)
