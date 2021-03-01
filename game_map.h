@@ -37,6 +37,9 @@ void Reset();
 
 // AI-specific functions.
 
+void GetPlayerCount(bool use_scratch,
+                    byte player_count[GAME_PLAYER_MAX_PLAYERS]);
+
 bool GetNextPossibleMove(byte player, bool use_scratch,
                          position::Coordinates* origin,
                          position::Coordinates* target, word* origin_iterator,
@@ -44,7 +47,8 @@ bool GetNextPossibleMove(byte player, bool use_scratch,
 
 void CountNeighbors(byte player, bool use_scratch,
                     position::Coordinates coordinates, byte* total_neighbors,
-                    byte* player_neighbors, byte* enemy_neighbors);
+                    byte* player_neighbors, byte* enemy_neighbors,
+                    bool* kill_move);
 
 }  // namespace map
 

@@ -20,19 +20,21 @@ namespace ai {
 static int16_t compute_move_score(byte player, bool use_scratch,
                                   const ::position::Coordinates& origin,
                                   const ::position::Coordinates& target) {
+  bool kill_move;
+
   byte origin_total_neighbors;
   byte origin_player_neighbors;
   byte origin_enemy_neighbors;
   game::map::CountNeighbors(player, use_scratch, origin,
                             &origin_total_neighbors, &origin_player_neighbors,
-                            &origin_enemy_neighbors);
+                            &origin_enemy_neighbors, &kill_move);
 
   byte target_total_neighbors;
   byte target_player_neighbors;
   byte target_enemy_neighbors;
   game::map::CountNeighbors(player, use_scratch, target,
                             &target_total_neighbors, &target_player_neighbors,
-                            &target_enemy_neighbors);
+                            &target_enemy_neighbors, &kill_move);
 
   // Are we moving to a border position?
   bool target_is_border = (target_total_neighbors < FACE_COUNT);
@@ -63,10 +65,12 @@ static int16_t compute_move_score(byte player, bool use_scratch,
   int16_t target_border_score =
       (target_is_border ? GAME_PLAYER_AI_SCORE_BORDER_SCORE : 0);
 
+  int16_t kill_move_score = kill_move ? 100 : 0;
+
   // Final score is just a sum of the scores above. Lots of room for tweaking
   // here.
   return target_enemies_score + target_player_score + origin_player_score +
-         target_border_score;
+         target_border_score + kill_move_score;
 }
 
 bool __attribute__((noinline))

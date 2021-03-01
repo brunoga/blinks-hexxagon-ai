@@ -70,9 +70,10 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
     byte total_neighbors;
     byte player_neighbors;
     byte enemy_neighbors;
+    bool kill_move;
     game::map::CountNeighbors(blink::state::GetPlayer(), false, *target,
                               &total_neighbors, &player_neighbors,
-                              &enemy_neighbors);
+                              &enemy_neighbors, &kill_move);
     if (enemy_neighbors > 0) {
       // Target position has at least 1 enemy neighbor.
       num_possible_moves_ = 0;

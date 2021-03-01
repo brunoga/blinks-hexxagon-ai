@@ -26,12 +26,7 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   if (GetNextScoredPossibleMove(blink::state::GetPlayer(), false,
                                 &possible_origin_, &possible_target_, &score,
                                 &origin_iterator_, &target_iterator_)) {
-    if (score < selected_score_) {
-      // Score is too low.Try next possible move.
-      return false;
-    }
-
-    // Now set origin and target positions to the current ones.
+    // Now set origin and target positions to given ones.
     game::map::SetMoveOrigin(possible_origin_.x, possible_origin_.y);
     game::map::SetMoveTarget(possible_target_.x, possible_target_.y);
 

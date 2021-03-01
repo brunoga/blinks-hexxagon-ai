@@ -107,6 +107,17 @@ void Reset() {
   scratch_index_ = 0;
 }
 
+void GetPlayerCount(bool use_scratch,
+                    byte player_count[GAME_PLAYER_MAX_PLAYERS]) {
+  memset(player_count, 0, GAME_PLAYER_MAX_PLAYERS);
+
+  for (byte i = 0; i < index_; ++i) {
+    byte player = get_player_at_index(i, use_scratch);
+    // Update player blink count.
+    player_count[player]++;
+  }
+}
+
 bool GetNextPossibleMove(byte player, bool use_scratch,
                          position::Coordinates* origin,
                          position::Coordinates* target, word* origin_iterator,
@@ -150,10 +161,15 @@ bool GetNextPossibleMove(byte player, bool use_scratch,
 
 void CountNeighbors(byte player, bool use_scratch,
                     position::Coordinates coordinates, byte* total_neighbors,
-                    byte* player_neighbors, byte* enemy_neighbors) {
+                    byte* player_neighbors, byte* enemy_neighbors,
+                    bool* kill_move) {
+  byte player_count[GAME_PLAYER_MAX_PLAYERS];
+  game::map::GetPlayerCount(use_scratch, player_count);
+
   *total_neighbors = 0;
   *player_neighbors = 0;
   *enemy_neighbors = 0;
+  *kill_move = false;
 
   for (byte i = 0; i < index_; ++i) {
     byte map_player = get_player_at_index(i, use_scratch);
@@ -162,6 +178,9 @@ void CountNeighbors(byte player, bool use_scratch,
       (*total_neighbors)++;
       if (map_player != GAME_PLAYER_NO_PLAYER && map_player != player) {
         (*enemy_neighbors)++;
+        if (--(player_count[map_player]) == 0) {
+          *kill_move = true;
+        }
       } else if (map_player == player) {
         (*player_neighbors)++;
       }
