@@ -14,68 +14,87 @@ namespace score {
 
 namespace counter {
 
-static position::Coordinates possible_origin_;
-static position::Coordinates possible_target_;
-static int16_t selected_score_ = -1000;
+static word move_origin_iterator_;
+static word move_target_iterator_;
+static position::Coordinates move_origin_;
+static position::Coordinates move_target_;
+static int16_t move_score_ = -1000;
 
-static word origin_iterator_;
-static word target_iterator_;
+static word counter_move_origin_iterator_;
+static word counter_move_target_iterator_;
+static byte counter_player_ = 0;
+
+static int16_t move_selected_score_ = -1000;
 
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
-  int16_t score = -1000;
-  if (GetNextScoredPossibleMove(blink::state::GetPlayer(), false,
-                                &possible_origin_, &possible_target_, &score,
-                                &origin_iterator_, &target_iterator_)) {
-    // Now set origin and target positions to given ones.
-    game::map::SetMoveOrigin(possible_origin_.x, possible_origin_.y);
-    game::map::SetMoveTarget(possible_target_.x, possible_target_.y);
+  if (move_score_ == -1000) {
+    // Move score has default value so we are not currently processing any move.
+    // Obtain next move and commit it to scratch.
+    if (GetNextScoredPossibleMove(
+            blink::state::GetPlayer(), false, &move_origin_, &move_target_,
+            &move_score_, &move_origin_iterator_, &move_target_iterator_)) {
+      // Now set origin and target positions to given ones.
+      game::map::SetMoveOrigin(move_origin_.x, move_origin_.y);
+      game::map::SetMoveTarget(move_target_.x, move_target_.y);
 
-    // And commit this move to the scratch.
-    game::map::CommitMove(true);
+      // And commit this move to the scratch.
+      game::map::CommitMove(true);
 
-    // Now compute the highest counter score for all remaining players.
-    position::Coordinates counter_possible_origin;
-    position::Coordinates counter_possible_target;
-    int16_t counter_selected_score = -1000;
+      return false;
+    } else {
+      // TODO(bga): If we reached here, there are no more possible moves and
+      // this return below is not enough to indicate that. Maybe use an extra
+      // parameter to indicate end of moves so callers stop trying calling us?
+      bool result = (move_selected_score_ != -1000);
 
-    for (byte counter_player = 1; counter_player < GAME_PLAYER_MAX_PLAYERS;
-         counter_player++) {
-      if (counter_player == blink::state::GetPlayer()) continue;
+      move_selected_score_ = -1000;
 
-      int16_t counter_score = -1000;
-      word counter_origin_iterator = 0;
-      word counter_target_iterator = 0;
-      while (GetNextScoredPossibleMove(
-          counter_player, true, &counter_possible_origin,
-          &counter_possible_target, &counter_score, &counter_origin_iterator,
-          &counter_target_iterator)) {
-        if (counter_score > counter_selected_score) {
-          counter_selected_score = counter_score;
-        }
+      return result;
+    }
+  }
+
+  // We have a move score. Process counter moves.
+
+  // Start with player one and increment from there.
+  counter_player_++;
+
+  if (counter_player_ < GAME_PLAYER_MAX_PLAYERS) {
+    // Valid player.
+
+    if (counter_player_ == blink::state::GetPlayer()) {
+      // But this is ourselves, so skip.
+      return false;
+    }
+
+    // Process all possible moves for this player.
+    static position::Coordinates counter_move_origin;
+    static position::Coordinates counter_move_target;
+    int16_t counter_move_score = -1000;
+    int16_t counter_move_selected_score = -1000;
+    while (GetNextScoredPossibleMove(
+        counter_player_, true, &counter_move_origin, &counter_move_target,
+        &counter_move_score, &counter_move_origin_iterator_,
+        &counter_move_target_iterator_)) {
+      if (counter_move_score > counter_move_selected_score) {
+        counter_move_selected_score = counter_move_score;
       }
     }
 
     // Compute the final score for this move
-    int16_t move_score = score - counter_selected_score;
+    int16_t final_score = move_score_ - counter_move_selected_score;
 
-    if (move_score > selected_score_) {
-      *origin = possible_origin_;
-      *target = possible_target_;
+    if (final_score > move_selected_score_) {
+      *origin = move_origin_;
+      *target = move_target_;
 
-      selected_score_ = move_score;
+      move_selected_score_ = final_score;
     }
-
-    return false;
+  } else {
+    counter_player_ = 0;
+    move_score_ = -1000;
   }
 
-  // TODO(bga): If we reached here, there are no more possible moves and this
-  // return below is not enough to indicate that. Maybe use an extra parameter
-  // to indicate end of moves so callers stop trying calling us?
-  bool result = (selected_score_ != -1000);
-
-  selected_score_ = -1000;
-
-  return result;
+  return false;
 }
 
 }  // namespace counter
