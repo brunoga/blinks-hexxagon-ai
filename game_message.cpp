@@ -2,7 +2,6 @@
 
 #include <string.h>
 
-//#include "blink_state.h"
 #include "blink_state_face.h"
 #include "game_map.h"
 #include "game_state.h"

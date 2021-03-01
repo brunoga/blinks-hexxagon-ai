@@ -10,7 +10,7 @@
 #define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
 #define GAME_MAP_DOWNLOAD_STATE_DOWNLOAD 1
 
-#define GAME_MAP_DOWNLOAD_METADATA_SIZE 3
+#define GAME_MAP_DOWNLOAD_METADATA_SIZE 2
 
 #define MESSAGE_MAP_DOWNLOAD 6  // Only used for starting the map download.
 
@@ -56,14 +56,6 @@ bool Process() {
                 MESSAGE_MAP_DOWNLOAD) {
           game::map::SetSize(getDatagramOnFace(current_hexxagon_face)[1]);
 
-          // TODO(bga): Add a function to do this as it will also be done in
-          // game message.
-          game::state::Data data = {
-              .as_byte = getDatagramOnFace(current_hexxagon_face)[2]};
-
-          game::state::Set(data.state, true);
-          game::state::SetPlayer(data.next_player);
-
           state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         }
 
@@ -77,6 +69,14 @@ bool Process() {
                  getDatagramOnFace(current_hexxagon_face), len);
           index_ += (len / 2);
         }
+
+        if (Downloaded()) {
+          // Switch to generic play state which will prevent the map from beign
+          // reset but will not do anything other than that, We should receive a
+          // new game state change message soon and that will get things moving.
+          game::state::Set(GAME_STATE_PLAY);
+        }
+
         break;
     }
   }
