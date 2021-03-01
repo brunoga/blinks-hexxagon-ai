@@ -8,6 +8,7 @@
 #include "game_state.h"
 #include "render_animation.h"
 #include "src/blinks-broadcast/message.h"
+#include "src/blinks-broadcast/message_tracker.h"
 
 #define MESSAGE_GAME_STATE_CHANGE 1
 #define MESSAGE_SELECT_ORIGIN 2
@@ -41,19 +42,21 @@ void Process() {
     const broadcast::Message* message =
         (const broadcast::Message*)getDatagramOnFace(face);
 
-    last_sequence_ = message->header.sequence;
+    if (!broadcast::message::tracker::Tracked(message->header)) {
+      broadcast::message::tracker::Track(message->header);
 
-    switch (message->header.id) {
-      case MESSAGE_GAME_STATE_CHANGE:
-        game_state_change(message->payload);
-        render::animation::ResetTimer();
-        break;
-      case MESSAGE_SELECT_ORIGIN:
-        select_origin(message->payload);
-        break;
-      case MESSAGE_SELECT_TARGET:
-        select_target(message->payload);
-        break;
+      switch (message->header.id) {
+        case MESSAGE_GAME_STATE_CHANGE:
+          game_state_change(message->payload);
+          render::animation::ResetTimer();
+          break;
+        case MESSAGE_SELECT_ORIGIN:
+          select_origin(message->payload);
+          break;
+        case MESSAGE_SELECT_TARGET:
+          select_target(message->payload);
+          break;
+      }
     }
 
     markDatagramReadOnFace(face);
@@ -67,8 +70,7 @@ static bool sendMessage(byte message_id, const byte* payload,
 
   broadcast::Message message;
   message.header.id = message_id;
-  message.header.sequence = (last_sequence_ + 1) % 16;
-  last_sequence_ = message.header.sequence;
+  message.header.sequence = broadcast::message::tracker::NextSequence();
 
   if (payload != nullptr) {
     memcpy(message.payload, payload, payload_size);
