@@ -4,15 +4,9 @@ namespace render {
 
 namespace animation {
 
-static Timer timer_;
-
 void Spinner(const Color& foreground, const Color& background, byte num_faces,
              byte slowdown) {
-  if (timer_.isExpired()) {
-    timer_.set((FACE_COUNT * slowdown) - 1);
-  }
-
-  byte start_face = (FACE_COUNT - 1) - (timer_.getRemaining() / slowdown);
+  byte start_face = (millis() / slowdown) % FACE_COUNT;
 
   byte step = FACE_COUNT / num_faces;
 
@@ -25,8 +19,6 @@ void Spinner(const Color& foreground, const Color& background, byte num_faces,
     }
   }
 }
-
-void ResetTimer() { timer_.set(0); }
 
 }  // namespace animation
 

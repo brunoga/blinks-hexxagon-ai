@@ -16,8 +16,6 @@ namespace game {
 
 namespace message {
 
-byte last_sequence_;
-
 static void game_state_change(const byte* payload) {
   game::state::Data data;
   data.as_byte = payload[0];
@@ -47,7 +45,6 @@ void Process() {
       switch (message->header.id) {
         case MESSAGE_GAME_STATE_CHANGE:
           game_state_change(message->payload);
-          render::animation::ResetTimer();
           break;
         case MESSAGE_SELECT_ORIGIN:
           select_origin(message->payload);
