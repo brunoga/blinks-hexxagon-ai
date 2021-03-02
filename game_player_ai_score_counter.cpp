@@ -22,9 +22,10 @@ static int16_t move_score_ = -1000;
 
 static word counter_move_origin_iterator_;
 static word counter_move_target_iterator_;
-static byte counter_player_ = 0;
+static byte counter_player_ = 1;
 
 static int16_t move_selected_score_ = -1000;
+static int16_t counter_move_selected_score_ = -1000;
 
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   if (move_score_ == -1000) {
@@ -39,6 +40,9 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
 
       // And commit this move to the scratch.
       game::map::CommitMove(true);
+
+      counter_player_ = 1;
+      counter_move_selected_score_ = -1000;
 
       return false;
     } else {
@@ -55,44 +59,47 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
 
   // We have a move score. Process counter moves.
 
-  // Start with player one and increment from there.
+  // Process all possible moves for the counter player.
+  static position::Coordinates counter_move_origin;
+  static position::Coordinates counter_move_target;
+  int16_t counter_move_score = -1000;
+  if (GetNextScoredPossibleMove(counter_player_, true, &counter_move_origin,
+                                &counter_move_target, &counter_move_score,
+                                &counter_move_origin_iterator_,
+                                &counter_move_target_iterator_)) {
+    if (counter_move_score > counter_move_selected_score_) {
+      counter_move_selected_score_ = counter_move_score;
+    }
+
+    return false;
+  }
+
+  // At this point, we just exhausted all moves for the current player. Move to
+  // the next one.
   counter_player_++;
+  if (counter_player_ == blink::state::GetPlayer()) {
+    counter_player_++;
+  }
 
   if (counter_player_ < GAME_PLAYER_MAX_PLAYERS) {
-    // Valid player.
-
-    if (counter_player_ == blink::state::GetPlayer()) {
-      // But this is ourselves, so skip.
-      return false;
-    }
-
-    // Process all possible moves for this player.
-    static position::Coordinates counter_move_origin;
-    static position::Coordinates counter_move_target;
-    int16_t counter_move_score = -1000;
-    int16_t counter_move_selected_score = -1000;
-    while (GetNextScoredPossibleMove(
-        counter_player_, true, &counter_move_origin, &counter_move_target,
-        &counter_move_score, &counter_move_origin_iterator_,
-        &counter_move_target_iterator_)) {
-      if (counter_move_score > counter_move_selected_score) {
-        counter_move_selected_score = counter_move_score;
-      }
-    }
-
-    // Compute the final score for this move
-    int16_t final_score = move_score_ - counter_move_selected_score;
-
-    if (final_score > move_selected_score_) {
-      *origin = move_origin_;
-      *target = move_target_;
-
-      move_selected_score_ = final_score;
-    }
-  } else {
-    counter_player_ = 0;
-    move_score_ = -1000;
+    // The new player is still valid. Process it.
+    return false;
   }
+
+  // Finished processing all players.
+
+  // Compute the final score for this move
+  int16_t final_score = move_score_ - counter_move_selected_score_;
+
+  if (final_score > move_selected_score_) {
+    *origin = move_origin_;
+    *target = move_target_;
+
+    move_selected_score_ = final_score;
+  }
+
+  move_score_ = -1000;
+  counter_player_ = 1;
 
   return false;
 }
