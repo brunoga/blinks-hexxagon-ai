@@ -179,7 +179,9 @@ void CountNeighbors(byte player, bool use_scratch,
       if (map_player != GAME_PLAYER_NO_PLAYER && map_player != player) {
         (*enemy_neighbors)++;
         if (--(player_count[map_player]) == 0) {
-          *kill_move = true;
+          *kill_move = player != blink::state::GetPlayer()
+                           ? (player == map_player ? true : false)
+                           : true;
         }
       } else if (map_player == player) {
         (*player_neighbors)++;
