@@ -13,12 +13,14 @@ namespace play {
 
 void Render() {
   byte slowdown = 100;
+  Color secondary_color = MAKECOLOR_5BIT_RGB(8, 8, 8);
   if (game::state::GetPlayer() == blink::state::GetPlayer()) {
     slowdown = 50;
+    secondary_color = MAKECOLOR_5BIT_RGB(23, 23, 23);
   }
 
   render::animation::Spinner(game::player::GetColor(blink::state::GetPlayer()),
-                             MAKECOLOR_5BIT_RGB(15, 15, 15), 3, slowdown);
+                             secondary_color, 3, slowdown);
 }
 
 }  // namespace play
