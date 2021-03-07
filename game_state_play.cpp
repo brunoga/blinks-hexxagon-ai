@@ -61,7 +61,7 @@ void Handler() {
 
       break;
     case GAME_STATE_PLAY_SELECT_TARGET:
-      if (!current_player || !got_move_ || target_done_) {
+      if (!current_player || !origin_done_ || target_done_) {
         return;
       }
 
