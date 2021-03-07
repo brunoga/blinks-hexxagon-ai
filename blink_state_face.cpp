@@ -27,8 +27,7 @@ void __attribute__((noinline)) ProcessTop() {
       hexxagon_face_ = face;
     }
 
-    if (value.reset_state != previous_value_[face].reset_state &&
-        value.reset_state) {
+    if (value.reset_state != previous_value_[face].reset_state) {
       game::state::Set(GAME_STATE_IDLE);
     }
 
