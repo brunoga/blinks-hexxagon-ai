@@ -7,7 +7,7 @@ namespace map {
 
 namespace download {
 
-bool Process();
+void Process();
 
 bool Downloaded();
 

@@ -10,7 +10,7 @@
 #define GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA 0
 #define GAME_MAP_DOWNLOAD_STATE_DOWNLOAD 1
 
-#define GAME_MAP_DOWNLOAD_METADATA_SIZE 2
+#define GAME_MAP_DOWNLOAD_METADATA_SIZE 1
 
 #define MESSAGE_MAP_DOWNLOAD 6  // Only used for starting the map download.
 
@@ -28,7 +28,7 @@ static byte index_;
 static byte state_;
 static byte previous_hexxagon_face_ = FACE_COUNT;
 
-bool Process() {
+void Process() {
   byte current_hexxagon_face = blink::state::face::handler::HexxagonFace();
   if (current_hexxagon_face != previous_hexxagon_face_) {
     if (previous_hexxagon_face_ != FACE_COUNT) {
@@ -43,18 +43,25 @@ bool Process() {
   }
 
   if (current_hexxagon_face == FACE_COUNT || Downloaded()) {
-    return false;
+    return;
   }
 
   byte len = getDatagramLengthOnFace(current_hexxagon_face);
 
   if (len > 0) {
+    if (getDatagramOnFace(current_hexxagon_face)[0] != MESSAGE_MAP_DOWNLOAD) {
+      return;
+    }
+
+    len--;
+    const byte* datagram = &(getDatagramOnFace(current_hexxagon_face)[1]);
+
+    markDatagramReadOnFace(current_hexxagon_face);
+
     switch (state_) {
       case GAME_MAP_DOWNLOAD_STATE_RECEIVE_METADATA:
-        if (len == GAME_MAP_DOWNLOAD_METADATA_SIZE &&
-            getDatagramOnFace(current_hexxagon_face)[0] ==
-                MESSAGE_MAP_DOWNLOAD) {
-          game::map::SetSize(getDatagramOnFace(current_hexxagon_face)[1]);
+        if (len == GAME_MAP_DOWNLOAD_METADATA_SIZE) {
+          game::map::SetSize(datagram[0]);
 
           state_ = GAME_MAP_DOWNLOAD_STATE_DOWNLOAD;
         }
@@ -65,30 +72,21 @@ bool Process() {
         bool is_last_chunk_len = (((len / 2) + index_) == game::map::GetSize());
 
         if (is_chunk_len || is_last_chunk_len) {
-          memcpy(&(game::map::Get()[index_]),
-                 getDatagramOnFace(current_hexxagon_face), len);
+          memcpy(&(game::map::Get()[index_]), datagram, len);
           index_ += (len / 2);
         }
 
         if (Downloaded()) {
-          // Switch to generic play state which will prevent the map from beign
-          // reset but will not do anything other than that, We should receive a
-          // new game state change message soon and that will get things moving.
+          // Switch to generic play state which will prevent the map from
+          // beign reset but will not do anything other than that, We should
+          // receive a new game state change message soon and that will get
+          // things moving.
           game::state::Set(GAME_STATE_PLAY);
         }
 
         break;
     }
   }
-
-  // Mark datagram read on all faces as we are processing the map and need to
-  // make sure we are not blocking messages on other faces.
-  //
-  // TODO(bga): We can improve this by handling the normal message processing
-  // and the map download processing in the same loop.
-  FOREACH_FACE(face) { markDatagramReadOnFace(face); }
-
-  return true;
 }
 
 bool Downloaded() { return (index_ != 0) && (index_ == game::map::GetSize()); }

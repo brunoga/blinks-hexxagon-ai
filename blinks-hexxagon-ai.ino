@@ -22,9 +22,13 @@ void loop() {
   bool button_clicked = util::NoSleepButtonSingleClicked();
   bool button_double_clicked = buttonDoubleClicked();
 
-  if (!game::map::download::Process()) {
-    game::message::Process();
+  // Process any map donwload in progress.
+  game::map::download::Process();
 
+  // And also process any pending game messages.
+  game::message::Process();
+
+  if (game::map::download::Downloaded()) {
     byte state = game::state::Get();
     if (state >= GAME_STATE_PLAY && state < GAME_STATE_END) {
       // We only care about the play state.
@@ -39,9 +43,7 @@ void loop() {
     }
 
     game::state::Set(state);
-  }
-
-  if (!game::map::download::Downloaded()) {
+  } else {
     if (button_double_clicked) {
       blink::state::StartLevelSelection();
     } else if (button_clicked) {
