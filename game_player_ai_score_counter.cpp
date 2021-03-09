@@ -60,28 +60,25 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   // We have a move score. Process counter moves.
 
   // Process all possible moves for the counter player.
-  static position::Coordinates counter_move_origin;
-  static position::Coordinates counter_move_target;
-  int16_t counter_move_score = -1000;
-  if (GetNextScoredPossibleMove(counter_player_, true, &counter_move_origin,
-                                &counter_move_target, &counter_move_score,
-                                &counter_move_origin_iterator_,
-                                &counter_move_target_iterator_)) {
-    if (counter_move_score > counter_move_selected_score_) {
-      counter_move_selected_score_ = counter_move_score;
-    }
+  if (counter_player_ != blink::state::GetPlayer()) {
+    static position::Coordinates counter_move_origin;
+    static position::Coordinates counter_move_target;
+    int16_t counter_move_score = -1000;
+    if (GetNextScoredPossibleMove(counter_player_, true, &counter_move_origin,
+                                  &counter_move_target, &counter_move_score,
+                                  &counter_move_origin_iterator_,
+                                  &counter_move_target_iterator_)) {
+      if (counter_move_score > counter_move_selected_score_) {
+        counter_move_selected_score_ = counter_move_score;
+      }
 
-    return false;
+      return false;
+    }
   }
 
   // At this point, we just exhausted all moves for the current player. Move to
   // the next one.
-  counter_player_++;
-  if (counter_player_ == blink::state::GetPlayer()) {
-    counter_player_++;
-  }
-
-  if (counter_player_ < GAME_PLAYER_MAX_PLAYERS) {
+  if (++counter_player_ < GAME_PLAYER_MAX_PLAYERS) {
     // The new player is still valid. Process it.
     return false;
   }
@@ -99,7 +96,6 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   }
 
   move_score_ = -1000;
-  counter_player_ = 1;
 
   return false;
 }
