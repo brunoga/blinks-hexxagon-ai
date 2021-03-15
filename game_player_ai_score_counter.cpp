@@ -31,7 +31,7 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   if (move_score_ == -1000) {
     // Move score has default value so we are not currently processing any move.
     // Obtain next move and commit it to scratch.
-    if (GetNextScoredPossibleMove(
+    if (GetAndScoreNextPossibleMove(
             blink::state::GetPlayer(), false, &move_origin_, &move_target_,
             &move_score_, &move_origin_iterator_, &move_target_iterator_)) {
       // Now set origin and target positions to given ones.
@@ -64,10 +64,10 @@ bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
     static position::Coordinates counter_move_origin;
     static position::Coordinates counter_move_target;
     int16_t counter_move_score = -1000;
-    if (GetNextScoredPossibleMove(counter_player_, true, &counter_move_origin,
-                                  &counter_move_target, &counter_move_score,
-                                  &counter_move_origin_iterator_,
-                                  &counter_move_target_iterator_)) {
+    if (GetAndScoreNextPossibleMove(counter_player_, true, &counter_move_origin,
+                                    &counter_move_target, &counter_move_score,
+                                    &counter_move_origin_iterator_,
+                                    &counter_move_target_iterator_)) {
       if (counter_move_score > counter_move_selected_score_) {
         counter_move_selected_score_ = counter_move_score;
       }

@@ -178,9 +178,20 @@ void CountNeighbors(byte player, bool use_scratch,
       (*total_neighbors)++;
       if (map_player != GAME_PLAYER_NO_PLAYER && map_player != player) {
         (*enemy_neighbors)++;
-        if (--(player_count[map_player]) == 0) {
-          *kill_move = player != blink::state::GetPlayer()
-                           ? (player == map_player ? true : false)
+
+        // This is an enemy neighbor and this move will reduce its number of
+        // held positions.
+        player_count[map_player]--;
+        if (player_count[map_player] == 0) {
+          // The player at this position had its held positions reduced to 0.
+          // This is a kill move as long as:
+          //
+          // - This is not a counter-move being computed (the current player
+          //   matches the player being processed).
+          // - Or this is a counter-move but the player that reached 0 positions
+          //   is the current player.
+          *kill_move = (player != blink::state::GetPlayer())
+                           ? (map_player == player) ? true : false
                            : true;
         }
       } else if (map_player == player) {

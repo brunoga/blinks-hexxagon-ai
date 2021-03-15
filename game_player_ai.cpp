@@ -74,10 +74,10 @@ static int16_t compute_move_score(byte player, bool use_scratch,
 }
 
 bool __attribute__((noinline))
-GetNextScoredPossibleMove(byte player, bool use_scratch,
-                          position::Coordinates* origin,
-                          position::Coordinates* target, int16_t* score,
-                          word* origin_iterator, word* target_iterator) {
+GetAndScoreNextPossibleMove(byte player, bool use_scratch,
+                            position::Coordinates* origin,
+                            position::Coordinates* target, int16_t* score,
+                            word* origin_iterator, word* target_iterator) {
   if (game::map::GetNextPossibleMove(player, use_scratch, origin, target,
                                      origin_iterator, target_iterator)) {
     *score = compute_move_score(player, use_scratch, *origin, *target);

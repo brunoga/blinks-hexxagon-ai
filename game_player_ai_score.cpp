@@ -22,9 +22,9 @@ static word target_iterator_;
 bool GetMove(position::Coordinates* origin, position::Coordinates* target) {
   int16_t score = -1000;
 
-  if (GetNextScoredPossibleMove(blink::state::GetPlayer(), false,
-                                &possible_origin_, &possible_target_, &score,
-                                &origin_iterator_, &target_iterator_)) {
+  if (GetAndScoreNextPossibleMove(blink::state::GetPlayer(), false,
+                                  &possible_origin_, &possible_target_, &score,
+                                  &origin_iterator_, &target_iterator_)) {
     if (score > selected_score_) {
       *origin = possible_origin_;
       *target = possible_target_;

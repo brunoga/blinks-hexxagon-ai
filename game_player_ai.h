@@ -9,10 +9,10 @@ namespace player {
 
 namespace ai {
 
-bool GetNextScoredPossibleMove(byte player, bool use_scratch,
-                               position::Coordinates* origin,
-                               position::Coordinates* target, int16_t* score,
-                               word* origin_iterator, word* target_iterator);
+bool GetAndScoreNextPossibleMove(byte player, bool use_scratch,
+                                 position::Coordinates* origin,
+                                 position::Coordinates* target, int16_t* score,
+                                 word* origin_iterator, word* target_iterator);
 
 }  // namespace ai
 
