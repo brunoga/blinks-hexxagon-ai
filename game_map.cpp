@@ -184,15 +184,9 @@ void CountNeighbors(byte player, bool use_scratch,
         player_count[map_player]--;
         if (player_count[map_player] == 0) {
           // The player at this position had its held positions reduced to 0.
-          // This is a kill move as long as:
-          //
-          // - This is not a counter-move being computed (the current player
-          //   matches the player being processed).
-          // - Or this is a counter-move but the player that reached 0 positions
-          //   is the current player.
-          *kill_move = (player != blink::state::GetPlayer())
-                           ? (map_player == player) ? true : false
-                           : true;
+          // This is a kill move as long as it matches the player this AI cares
+          // about.
+          *kill_move = (map_player == blink::state::GetPlayer());
         }
       } else if (map_player == player) {
         (*player_neighbors)++;
