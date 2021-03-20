@@ -10,6 +10,8 @@ namespace game {
 namespace player {
 
 static const Color colors_[] = {GREEN, MAPLE, SPRUCE, CHERRY, ELM};
+static const byte patterns_[] = {0b00010101, 0b00010111, 0b00011111, 0b00011011,
+                                 0b00001001};
 
 byte GetNext(byte current_player) {
   byte next_player = current_player + 1;
@@ -20,6 +22,10 @@ byte GetNext(byte current_player) {
 
 Color __attribute__((noinline)) GetColor(byte player) {
   return colors_[player];
+}
+
+bool __attribute__((noinline)) GetLitFace(byte player, byte face) {
+  return (patterns_[player] & (1 << face));
 }
 
 }  // namespace player

@@ -7,8 +7,7 @@ namespace render {
 
 namespace animation {
 
-void Spinner(const Color& foreground, const Color& background, byte num_faces,
-             byte slowdown);
+void Spinner(Color background, byte slowdown, byte pause);
 
 }  // namespace animation
 

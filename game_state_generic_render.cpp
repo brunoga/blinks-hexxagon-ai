@@ -12,8 +12,7 @@ namespace generic {
 
 void Render() {
   // Slow spinning 3 faces.
-  render::animation::Spinner(game::player::GetColor(blink::state::GetPlayer()),
-                             MAKECOLOR_5BIT_RGB(8, 8, 8), 3, 100);
+  render::animation::Spinner(OFF, 100, 1);
 }
 
 }  // namespace generic

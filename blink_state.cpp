@@ -25,7 +25,7 @@ byte __attribute__((noinline)) GetPlayer() { return state_.player; }
 
 void Render() {
   if (GetLevelSelection()) {
-    setColor(MAKECOLOR_5BIT_RGB(8, 8, 8));
+    setColor(OFF);
     for (byte face = 0; face <= GetAILevel(); ++face) {
       setColorOnFace(game::player::GetColor(GetPlayer()), face);
     }

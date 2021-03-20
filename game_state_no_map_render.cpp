@@ -12,12 +12,11 @@ namespace state {
 namespace no_map {
 
 void Render() {
-  byte faces = 1 + (blink::state::face::handler::HexxagonFace() != FACE_COUNT);
-
   // Render 1 spinning face when not connected to a Blink and 2 spinning faces
   // when connected.
-  render::animation::Spinner(game::player::GetColor(blink::state::GetPlayer()),
-                             MAKECOLOR_5BIT_RGB(8, 8, 8), faces, 100);
+  render::animation::Spinner(
+      OFF, 125,
+      blink::state::face::handler::HexxagonFace() != FACE_COUNT ? 1 : 2);
 }
 
 }  // namespace no_map
