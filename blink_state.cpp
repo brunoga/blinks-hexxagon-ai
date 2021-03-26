@@ -27,7 +27,7 @@ void Render() {
   if (GetLevelSelection()) {
     setColor(OFF);
     for (byte face = 0; face <= GetAILevel(); ++face) {
-      setColorOnFace(game::player::GetColor(GetPlayer()), face);
+      setColorOnFace(game::player::GetColor(GetPlayer()), face * 2);
     }
 
     return;
