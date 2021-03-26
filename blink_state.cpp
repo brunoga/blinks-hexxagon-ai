@@ -8,6 +8,9 @@
 
 #define BLINK_STATE_MAX_AI_LEVEL 2  // First level is 0.
 #define BLINK_STATE_LEVEL_SELECTION_TIMEOUT 2000
+
+#define BLINK_STATE_COLOR_OVERRIDE_TIMEOUT 200
+
 namespace blink {
 
 struct State {
@@ -19,11 +22,25 @@ static State state_;
 
 namespace state {
 
+static Timer color_override_timer_;
+static bool in_level_selection_;
+
 void SetPlayer(byte player) { state_.player = player; }
 
 byte __attribute__((noinline)) GetPlayer() { return state_.player; }
 
+void StartColorOverride() {
+  color_override_timer_.set(BLINK_STATE_COLOR_OVERRIDE_TIMEOUT);
+}
+
+bool GetColorOverride() { return !color_override_timer_.isExpired(); }
+
 void Render() {
+  if (GetColorOverride()) {
+    setColor(WHITE);
+    return;
+  }
+
   if (GetLevelSelection()) {
     setColor(OFF);
     for (byte face = 0; face <= GetAILevel(); ++face) {
@@ -56,10 +73,21 @@ void NextAILevel() {
 byte GetAILevel() { return state_.ai_level; }
 
 void StartLevelSelection() {
+  if (!in_level_selection_) StartColorOverride();
+
+  in_level_selection_ = true;
   state_.level_selection_timer_.set(BLINK_STATE_LEVEL_SELECTION_TIMEOUT);
 }
 
-bool GetLevelSelection() { return !state_.level_selection_timer_.isExpired(); }
+bool GetLevelSelection() {
+  bool expired = state_.level_selection_timer_.isExpired();
+  if (expired && in_level_selection_) {
+    in_level_selection_ = false;
+    StartColorOverride();
+  }
+
+  return !expired;
+}
 
 void Reset() {
   state_.player = 0;

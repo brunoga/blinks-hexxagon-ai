@@ -10,6 +10,9 @@ namespace state {
 void SetPlayer(byte player);
 byte GetPlayer();
 
+void StartColorOverride();
+bool GetColorOverride();
+
 void NextAILevel();
 byte GetAILevel();
 
