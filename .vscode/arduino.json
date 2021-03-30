@@ -1,0 +1,6 @@
+{
+    "board": "blinklib:avr:blink",
+    "sketch": "blinks-hexxagon-ai.ino",
+    "port": "/dev/ttyS0",
+    "output": "output"
+}
